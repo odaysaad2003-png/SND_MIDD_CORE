@@ -125,3 +125,11 @@
 - [ ] Are errors handled without leaking stack traces or internals?
 - [ ] Is this endpoint tested for the "wrong user" / "no auth" / "wrong role"
       cases?
+
+## Sprint 2 Note: Refresh Token Transport (Interim Decision)
+Sprint 2 implements refresh tokens returned in the response body rather
+than HttpOnly cookies, because there is no frontend yet and testing is
+Postman-only. This is a deliberate, approved staging decision — not a
+deviation from the "HttpOnly Cookie Direction for Auth v2" section above.
+The migration to HttpOnly cookies happens when frontend integration
+begins. See `docs/AUTH_CONCEPTS.md` for full reasoning.
