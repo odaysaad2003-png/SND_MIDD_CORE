@@ -91,3 +91,25 @@ docker-compose.override.yml
 *.key
 *.cert
 *.crt
+
+
+# Dependencies
+node_modules/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# Build outputs
+dist/
+build/
+coverage/
+
+# Logs
+*.log
+
+# Backup / bad history folders
+.git_backup_bad_history/
+.git_backup*/

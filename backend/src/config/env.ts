@@ -8,12 +8,18 @@ import { z } from "zod";
  * even though Auth v2 does not consume them until Sprint 2.
  */
 const envSchema = z.object({
-  NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
-  PORT: z.coerce.number().int().positive().default(4000),
-  MONGODB_URI: z.string().min(1, "MONGODB_URI is required"),
-  JWT_SECRET: z.string().min(32, "JWT_SECRET is required"),
-  JWT_EXPIRES_IN: z.string().min(1, "JWT_EXPIRES_IN is required"),
-  CORS_ORIGIN: z.string().min(1, "CORS_ORIGIN is required"),
+    NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
+    PORT: z.coerce.number().int().positive().default(4000),
+    MONGODB_URI: z.string().min(1, "MONGODB_URI is required"),
+    JWT_SECRET: z.string().min(32, "JWT_SECRET is required"),
+    JWT_EXPIRES_IN: z.string().min(1, "JWT_EXPIRES_IN is required"),
+    CORS_ORIGIN: z.string().min(1, "CORS_ORIGIN is required"),
+    BCRYPT_SALT_ROUNDS: z.coerce
+    .number()
+    .int()
+    .min(4)
+    .max(15, "BCRYPT_SALT_ROUNDS must be between 4 and 15")
+    .default(10),
 });
 
 function loadEnv() {
