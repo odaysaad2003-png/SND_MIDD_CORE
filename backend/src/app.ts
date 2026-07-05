@@ -8,6 +8,9 @@ import {errorHandler, notFoundHandler} from "./middleware/error-handler";
 import healthRoutes from "./modules/health/health.routes";
 import authRoutes from "./modules/auth/auth.routes";
 
+import path from "path";
+import usersRoutes from "./modules/users/user.routes";
+
 export function createApp(): Express {
     const app = express();
 
@@ -27,9 +30,14 @@ export function createApp(): Express {
 
     app.use("/api", generalRateLimiter);
 
+    app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
+
+
     // Routes
     app.use("/api/v1/health", healthRoutes);
     app.use("/api/v1/auth", authRoutes);
+    
+    app.use("/api/v1/users", usersRoutes);
 
     app.use(notFoundHandler);
     app.use(errorHandler);
