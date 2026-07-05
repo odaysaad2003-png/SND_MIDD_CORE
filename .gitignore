@@ -113,3 +113,4 @@ coverage/
 # Backup / bad history folders
 .git_backup_bad_history/
 .git_backup*/
+uploads/
