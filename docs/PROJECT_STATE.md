@@ -165,8 +165,30 @@ The backend foundation is now running correctly and is ready for the next sprint
 
 
 
-## Sprint 2 Status — Auth Foundation
+## Sprint 3 Preparation — Users, Profile & Avatar
 
-Status: Implemented, pending your review/testing.
+Sprint 2 Auth is complete and tested through Postman.
 
-Files Added:
+Current confirmed capabilities:
+- Register works.
+- Login works.
+- Access token is saved dynamically in Postman.
+- Refresh token flow is understood and ready for testing.
+- Protected routes can be tested with `Authorization: Bearer {{accessToken}}`.
+
+Sprint 3 will focus on:
+- Current authenticated user profile.
+- Reading current user data.
+- Updating safe profile fields.
+- Uploading user avatar with multipart/form-data.
+- Validating uploaded files server-side.
+- Saving avatar path/URL on the user document.
+- Returning sanitized user data.
+- Testing all profile/avatar routes in Postman.
+
+Important Sprint 3 decisions:
+- Do not rewrite Auth.
+- Do not move refresh tokens to cookies in this sprint.
+- Do not introduce frontend work.
+- Use local disk storage for avatar uploads during this learning sprint.
+- External storage such as Cloudinary/S3 is deferred to a future production/deployment sprint.
