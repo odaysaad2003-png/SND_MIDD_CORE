@@ -20,6 +20,8 @@ const envSchema = z.object({
     .min(4)
     .max(15, "BCRYPT_SALT_ROUNDS must be between 4 and 15")
     .default(10),
+    REFRESH_TOKEN_SECRET: z.string().min(32, "REFRESH_TOKEN_SECRET is required"),
+    REFRESH_TOKEN_EXPIRES_IN: z.string().min(1, "REFRESH_TOKEN_EXPIRES_IN is required"),
 });
 
 function loadEnv() {
