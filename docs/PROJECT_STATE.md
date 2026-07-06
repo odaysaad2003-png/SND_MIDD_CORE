@@ -192,3 +192,25 @@ Important Sprint 3 decisions:
 - Do not introduce frontend work.
 - Use local disk storage for avatar uploads during this learning sprint.
 - External storage such as Cloudinary/S3 is deferred to a future production/deployment sprint.
+
+## Sprint 4 Approved Decisions — Posts v2 with Separate Images
+
+Approved scope:
+- Build a `posts` resource as the first full production-minded resource in the backend.
+- Posts are simple community posts: `title`, `content`, `images`, `author`, `status`, `deletedAt`, timestamps.
+- Public users may read active posts:
+  - `GET /api/v1/posts`
+  - `GET /api/v1/posts/:postId`
+- Authenticated users may:
+  - create posts
+  - view their own posts
+  - update their own posts
+  - soft-delete their own posts
+  - upload images to their own posts through a dedicated endpoint
+- Admin users may update/delete/upload images for any post.
+- Post images must be uploaded through a separate endpoint, not inside `POST /posts`.
+- Use local disk storage for Sprint 4, but design upload/storage code with a clear storage abstraction so it can later be migrated to S3/Cloudinary without rewriting post business logic.
+- Maximum post images per post: 5.
+- Allowed image MIME types: image/jpeg, image/png, image/webp.
+- Max size per image: 5MB.
+- Do not implement comments, likes, reports, notifications, Cloudinary/S3, or magic-byte validation in Sprint 4.
