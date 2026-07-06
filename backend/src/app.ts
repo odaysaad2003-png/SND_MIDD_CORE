@@ -10,6 +10,7 @@ import authRoutes from "./modules/auth/auth.routes";
 
 import path from "path";
 import usersRoutes from "./modules/users/user.routes";
+import postRoutes from "./modules/posts/post.routes";
 
 export function createApp(): Express {
     const app = express();
@@ -38,6 +39,9 @@ export function createApp(): Express {
     app.use("/api/v1/auth", authRoutes);
     
     app.use("/api/v1/users", usersRoutes);
+    app.use("/api/v1/posts", postRoutes);
+
+    // Error handling
 
     app.use(notFoundHandler);
     app.use(errorHandler);
