@@ -214,3 +214,50 @@ Approved scope:
 - Allowed image MIME types: image/jpeg, image/png, image/webp.
 - Max size per image: 5MB.
 - Do not implement comments, likes, reports, notifications, Cloudinary/S3, or magic-byte validation in Sprint 4.
+
+
+
+## Sprint 4 Status — Posts v2 with Separate Image Uploads
+
+Status: Completed
+
+Files Added:
+backend/src/modules/posts/post.model.ts
+backend/src/modules/posts/post.validation.ts
+backend/src/modules/posts/post.service.ts
+backend/src/modules/posts/post.controller.ts
+backend/src/modules/posts/post.routes.ts
+backend/src/middleware/post-images.middleware.ts
+backend/src/utils/file-storage.ts
+
+Files Modified:
+backend/src/config/upload.ts (added POST_IMAGE_* constants; avatar exports untouched)
+backend/src/app.ts (mounted /api/v1/posts)
+
+Concepts Learned:
+- Separating resource creation (JSON) from file upload (multipart) as distinct endpoints.
+- Soft delete vs hard delete, and why reversibility argues against also deleting files immediately.
+- Ownership re-derivation from req.user (never trusting client-supplied ids) at the service layer.
+- Regex vs $text search trade-offs for a small-scale feed.
+- Cleaning up orphaned uploaded files when a later validation/DB step fails.
+
+Architecture Decisions:
+- Post images live under uploads/posts, served via the existing /uploads static route — no new static mount needed.
+- Image URLs stored on the post document as plain strings; storage constants centralized in config/upload.ts for a future S3/Cloudinary swap.
+- DELETE /posts/:postId returns 204 (no body), a deliberate one-off exception to sendSuccess, matching API_CONVENTIONS.md's status table.
+- deletePost is idempotent (deleting an already-deleted post is a no-op, not an error).
+
+Security Decisions:
+- author/status/images/deletedAt are never accepted from the client on create or update (.strict() schemas).
+- Ownership/role check happens in post.service.ts, not the controller.
+- Post image mime type enforced server-side; filenames always server-generated.
+
+Known Issues / TODOs:
+- Magic-byte validation still deferred (per Sprint 3 decision).
+- Soft-deleted posts' image files remain on disk (documented, deferred cleanup).
+- Search uses regex, not $text or an external search engine (fine at current scale).
+
+What Must Not Be Changed in Sprint 5:
+- posts module layering and ownership pattern.
+- Soft delete semantics (status/deletedAt).
+- Image upload separation from post creation.
