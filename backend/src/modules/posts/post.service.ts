@@ -1,7 +1,7 @@
 import {FilterQuery, Types} from "mongoose";
 import {IPost, PostModel, PostStatus} from "./post.model";
 import {AppError} from "../../utils/app-error";
-
+import {GetMyPostsQuery} from "./post.validation";
 const AUTHOR_PUBLIC_FIELDS = "name avatar";
 
 export interface SanitizedPostAuthor {
@@ -133,6 +133,54 @@ export async function createPost(userId: string, data: {title: string; content: 
 
     return sanitizePost(post);
 }
+
+
+
+
+export const getMyPosts = async (userId: string, query: GetMyPostsQuery) => {
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 10;
+    const skip = (page - 1) * limit;
+
+    const filter: FilterQuery<IPost> = {
+        author: userId,
+        deletedAt: null,
+    };
+
+    if (query.status) {
+        filter.status = query.status;
+    }
+
+    if (query.category) {
+        filter.category = query.category;
+    }
+
+    if (query.q) {
+        filter.$or = [{title: {$regex: query.q, $options: "i"}}, {content: {$regex: query.q, $options: "i"}}];
+    }
+
+    const [posts, total] = await Promise.all([
+        PostModel.find(filter)
+        .sort(query.sort ?? "-createdAt")
+        .skip(skip)
+        .limit(limit)
+        .populate("author", "name avatar")
+        .lean(),
+
+        PostModel.countDocuments(filter),
+    ]);
+
+    return {
+        data: posts,
+        meta: {
+            page,
+            limit,
+            total,
+            totalPages: Math.ceil(total / limit),
+        },
+    };
+};
+
 
 export async function getActivePostById(postId: string): Promise<SanitizedPost> {
     const post = await PostModel.findOne({

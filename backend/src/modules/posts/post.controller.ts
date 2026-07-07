@@ -2,6 +2,7 @@ import {Request, Response} from "express";
 import {asyncHandler} from "../../utils/async-handler";
 import {sendSuccess} from "../../utils/api-response";
 import * as postService from "./post.service";
+import { GetMyPostsQuery } from "./post.validation";
 
 export const listPosts = asyncHandler(async (req: Request, res: Response) => {
     const {page, limit, sort, search} = req.query as unknown as {
@@ -18,10 +19,7 @@ export const listPosts = asyncHandler(async (req: Request, res: Response) => {
         search,
     });
 
-    sendSuccess(res, {
-        data: posts,
-        meta,
-    });
+    sendSuccess(res, {data: posts,meta});
 });
 
 export const createPost = asyncHandler(async (req: Request, res: Response) => {
@@ -42,6 +40,19 @@ export const getPost = asyncHandler(async (req: Request, res: Response) => {
     sendSuccess(res, {
         data: post,
     });
+});
+
+
+export const getMyPosts = asyncHandler(async (req, res) => {
+    const userId = req.user!.id;
+
+    const result = await postService.getMyPosts(userId, req.query as unknown as GetMyPostsQuery);
+
+    sendSuccess(res, {
+        statusCode: 200,
+        data: result.data,
+        meta: result.meta,
+    } );
 });
 
 
