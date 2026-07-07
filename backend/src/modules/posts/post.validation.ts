@@ -1,4 +1,6 @@
-import {z} from "zod";
+import {object, z} from "zod";
+import {Types} from "mongoose"
+import { title } from "process";
 
 export const createPostSchema = z.object({
     body: z
@@ -13,6 +15,32 @@ export const createPostSchema = z.object({
     })
     .strict(),
 });
+
+
+const objectId = z.string().refine((val) => Types.ObjectId.isValid(val), {
+    message: "Invalid id",
+});
+
+export const postIdParamsSchema = z.object({
+    params: z.object({postId: objectId}).strict(),
+});
+
+//for prodect request updat or delet
+export const updatePostSchema = z.object({
+    params: z.object({postId: objectId}).strict(),
+
+    body: z
+    .object({
+        title: z.string().trim().min(3).max(120).optional(),
+        content: z.string().trim().min(1).max(5000).optional(),
+    })
+    .strict()
+    .refine((data) => Object.keys(data).length > 0, {
+        message: "At least one of title or content must be provided",
+    }),
+});
+
+
 
 export const listPostsQuerySchema = z.object({
     query: z

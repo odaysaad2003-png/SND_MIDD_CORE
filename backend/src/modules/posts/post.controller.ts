@@ -35,3 +35,30 @@ export const createPost = asyncHandler(async (req: Request, res: Response) => {
         statusCode: 201,
     });
 });
+
+export const getPost = asyncHandler(async (req: Request, res: Response) => {
+    const post = await postService.getActivePostById(req.params.postId);
+
+    sendSuccess(res, {
+        data: post,
+    });
+});
+
+
+
+export const updatePost = asyncHandler(async (req: Request, res: Response) => {
+    const post = await postService.updatePost(req.params.postId, req.user!.id, req.user!.role, {
+        title: req.body.title,
+        content: req.body.content,
+    });
+
+    sendSuccess(res, {
+        data: post,
+    });
+});
+
+export const deletePost = asyncHandler(async (req: Request, res: Response) => {
+    await postService.softDeletePost(req.params.postId, req.user!.id, req.user!.role);
+
+    res.status(204).send();
+});

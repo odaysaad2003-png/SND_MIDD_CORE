@@ -1,5 +1,6 @@
 import {FilterQuery, Types} from "mongoose";
 import {IPost, PostModel, PostStatus} from "./post.model";
+import {AppError} from "../../utils/app-error";
 
 const AUTHOR_PUBLIC_FIELDS = "name avatar";
 
@@ -58,6 +59,29 @@ function escapeRegex(value: string): string {
     return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
+// function for get the one bost from data
+async function findPostOrThrow(postId: string): Promise<IPost> {
+    const post = await PostModel.findById(postId);
+
+    if (!post) {
+        throw AppError.notFound("Post not found");
+    }
+
+    return post;
+}
+//find one post has been owned by user or admin
+async function findOwnedPostOrThrow(postId: string, userId: string, role: "user" | "admin"): Promise<IPost> {
+    const post = await findPostOrThrow(postId);
+
+    const isOwner = post.author.toString() === userId;
+
+    if (!isOwner && role !== "admin") {
+        throw AppError.forbidden("You do not have permission to modify this post");
+    }
+
+    return post;
+}
+
 export async function listActivePosts(options: {
     page: number;
     limit: number;
@@ -108,4 +132,57 @@ export async function createPost(userId: string, data: {title: string; content: 
     await post.populate("author", AUTHOR_PUBLIC_FIELDS);
 
     return sanitizePost(post);
+}
+
+export async function getActivePostById(postId: string): Promise<SanitizedPost> {
+    const post = await PostModel.findOne({
+        _id: postId,
+        status: "active",
+    }).populate("author", AUTHOR_PUBLIC_FIELDS);
+
+    if (!post) {
+        throw AppError.notFound("Post not found");
+    }
+
+    return sanitizePost(post);
+}
+
+export async function updatePost(
+    postId: string,
+    userId: string,
+    role: "user" | "admin",
+    updates: {title?: string; content?: string}
+): Promise<SanitizedPost> {
+    const post = await findOwnedPostOrThrow(postId, userId, role);
+
+    if (post.status === "deleted") {
+        throw AppError.notFound("Post not found");
+    }
+
+    if (updates.title !== undefined) {
+        post.title = updates.title;
+    }
+
+    if (updates.content !== undefined) {
+        post.content = updates.content;
+    }
+
+    await post.save();
+
+    await post.populate("author", AUTHOR_PUBLIC_FIELDS);
+
+    return sanitizePost(post);
+}
+
+export async function softDeletePost(postId: string, userId: string, role: "user" | "admin"): Promise<void> {
+    const post = await findOwnedPostOrThrow(postId, userId, role);
+
+    if (post.status === "deleted") {
+        return;
+    }
+
+    post.status = "deleted";
+    post.deletedAt = new Date();
+
+    await post.save();
 }
