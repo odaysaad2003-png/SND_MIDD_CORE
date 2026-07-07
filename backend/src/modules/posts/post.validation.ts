@@ -1,6 +1,5 @@
-import {object, z} from "zod";
+import { z} from "zod";
 import {Types} from "mongoose"
-import { title } from "process";
 
 export const createPostSchema = z.object({
     body: z

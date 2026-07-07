@@ -261,3 +261,35 @@ What Must Not Be Changed in Sprint 5:
 - posts module layering and ownership pattern.
 - Soft delete semantics (status/deletedAt).
 - Image upload separation from post creation.
+
+## Sprint 4 — Posts Module Current State
+
+### Completed
+- Post model created with title, content, author, images, status, deletedAt.
+- Public feed endpoint implemented:
+  - GET /api/v1/posts
+- Create post endpoint implemented:
+  - POST /api/v1/posts
+  - protected by authentication
+  - author comes from req.user.id
+- Single post endpoint implemented:
+  - GET /api/v1/posts/:postId
+- My posts endpoint implemented and tested:
+  - GET /api/v1/posts/me
+  - protected
+  - uses authenticated user id
+- Update post endpoint exists:
+  - PATCH /api/v1/posts/:postId
+  - protected
+  - uses owner/admin authorization
+- Soft delete endpoint exists:
+  - DELETE /api/v1/posts/:postId
+  - protected
+  - uses owner/admin authorization
+
+### Needs Cleanup Before Sprint 4 Closure
+- Align getMyPostsQuerySchema with project validation shape.
+- Remove unsupported query fields like category unless category is added to the model.
+- Align status filters with current PostStatus: active | deleted.
+- Consider sanitizing getMyPosts response like listPosts and getPost.
+- Remove unused imports from post.validation.ts.

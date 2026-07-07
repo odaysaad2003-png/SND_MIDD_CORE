@@ -19,7 +19,7 @@ export const listPosts = asyncHandler(async (req: Request, res: Response) => {
         search,
     });
 
-    sendSuccess(res, {data: posts,meta});
+    sendSuccess(res, {data: posts,meta:{...meta}});
 });
 
 export const createPost = asyncHandler(async (req: Request, res: Response) => {
