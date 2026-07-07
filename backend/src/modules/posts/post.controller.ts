@@ -20,7 +20,18 @@ export const listPosts = asyncHandler(async (req: Request, res: Response) => {
 
     sendSuccess(res, {
         data: posts,
-         meta,
-        
+        meta,
+    });
+});
+
+export const createPost = asyncHandler(async (req: Request, res: Response) => {
+    const post = await postService.createPost(req.user!.id, {
+        title: req.body.title,
+        content: req.body.content,
+    });
+
+    sendSuccess(res, {
+        data: post,
+        statusCode: 201,
     });
 });

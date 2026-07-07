@@ -1,5 +1,5 @@
 import {FilterQuery, Types} from "mongoose";
-import {IPost, PostModel} from "./post.model";
+import {IPost, PostModel, PostStatus} from "./post.model";
 
 const AUTHOR_PUBLIC_FIELDS = "name avatar";
 
@@ -15,7 +15,7 @@ export interface SanitizedPost {
     content: string;
     author: SanitizedPostAuthor;
     images: string[];
-    status: "active" | "deleted";
+    status: PostStatus;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -50,16 +50,13 @@ function sanitizePost(post: IPost): SanitizedPost {
     };
 }
 
-
 function buildSort(sort: "latest" | "oldest") {
     return sort === "oldest" ? {createdAt: 1 as const} : {createdAt: -1 as const};
 }
 
-
 function escapeRegex(value: string): string {
     return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
-
 
 export async function listActivePosts(options: {
     page: number;
@@ -96,4 +93,19 @@ export async function listActivePosts(options: {
             totalPages: Math.ceil(total / limit),
         },
     };
+}
+
+export async function createPost(userId: string, data: {title: string; content: string}): Promise<SanitizedPost> {
+    const post = await PostModel.create({
+        title: data.title,
+        content: data.content,
+        author: userId,
+        images: [],
+        status: "active",
+        deletedAt: null,
+    });
+
+    await post.populate("author", AUTHOR_PUBLIC_FIELDS);
+
+    return sanitizePost(post);
 }
