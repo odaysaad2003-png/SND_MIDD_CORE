@@ -51,4 +51,7 @@ export class AppError extends Error {
   static internal(message = "Internal server error") {
     return new AppError("INTERNAL_ERROR", message);
   }
+  static badRequest(message = "Bad request") {
+    return new AppError("BAD_REQUEST", message);
+  }
 }

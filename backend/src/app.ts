@@ -7,7 +7,6 @@ import {generalRateLimiter} from "./middleware/rate-limiter";
 import {errorHandler, notFoundHandler} from "./middleware/error-handler";
 import healthRoutes from "./modules/health/health.routes";
 import authRoutes from "./modules/auth/auth.routes";
-
 import path from "path";
 import usersRoutes from "./modules/users/user.routes";
 import postRoutes from "./modules/posts/post.routes";
