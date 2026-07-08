@@ -87,17 +87,10 @@ export const uploadPostImages = asyncHandler(async (req: Request, res: Response)
         throw AppError.badRequest("At least one image is required");
     }
 
-    try {
-        const imageUrls = files.map(getPostImagePublicUrl);
+    const post = await postService.addPostImages(req.params.postId, req.user!.id, req.user!.role, files);
 
-        const post = await postService.addPostImages(req.params.postId, req.user!.id, req.user!.role, imageUrls);
-
-        sendSuccess(res, {
-            statusCode: 200,
-            data: post,
-        });
-    } catch (error) {
-        await deleteLocalFiles(files);
-        throw error;
-    }
+    sendSuccess(res, {
+        statusCode: 200,
+        data: post,
+    });
 });
