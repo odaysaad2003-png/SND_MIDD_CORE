@@ -55,8 +55,8 @@ export const getMyPosts = asyncHandler(async (req, res) => {
     sendSuccess(res, {
         statusCode: 200,
         data: result.data,
-        meta: result.meta,
-    } );
+        meta: {...result.meta},
+    });
 });
 
 

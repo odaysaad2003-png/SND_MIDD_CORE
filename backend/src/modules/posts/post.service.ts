@@ -1,8 +1,9 @@
-import {FilterQuery, Types} from "mongoose";
+import {FilterQuery, SortOrder, Types} from "mongoose";
 import {IPost, PostModel, PostStatus} from "./post.model";
 import {AppError} from "../../utils/app-error";
 import {GetMyPostsQuery} from "./post.validation";
 import {AUTHOR_PUBLIC_FIELDS, MAX_POST_IMAGES_PER_POST} from "../../constants/post.constants";
+
 export interface SanitizedPostAuthor {
     id: string;
     name: string;
@@ -53,12 +54,27 @@ function sanitizePost(post: IPost): SanitizedPost {
 function buildSort(sort: "latest" | "oldest") {
     return sort === "oldest" ? {createdAt: 1 as const} : {createdAt: -1 as const};
 }
+function buildMyPostsSort(sort: GetMyPostsQuery["sort"]): Record<string, SortOrder> {
+    switch (sort) {
+        case "createdAt":
+            return {createdAt: 1};
+
+        case "updatedAt":
+            return {updatedAt: 1};
+
+        case "-updatedAt":
+            return {updatedAt: -1};
+
+        case "-createdAt":
+        default:
+            return {createdAt: -1};
+    }
+}
 
 function escapeRegex(value: string): string {
     return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-// function for get the one bost from data
 async function findPostOrThrow(postId: string): Promise<IPost> {
     const post = await PostModel.findById(postId);
 
@@ -68,7 +84,7 @@ async function findPostOrThrow(postId: string): Promise<IPost> {
 
     return post;
 }
-//find one post has been owned by user or admin
+
 async function findOwnedPostOrThrow(postId: string, userId: string, role: "user" | "admin"): Promise<IPost> {
     const post = await findPostOrThrow(postId);
 
@@ -133,44 +149,42 @@ export async function createPost(userId: string, data: {title: string; content: 
     return sanitizePost(post);
 }
 
-
-
-
-export const getMyPosts = async (userId: string, query: GetMyPostsQuery) => {
-    const page = query.page ?? 1;
-    const limit = query.limit ?? 10;
+export async function getMyPosts(
+    userId: string,
+    query: GetMyPostsQuery
+): Promise<{data: SanitizedPost[]; meta: PaginationMeta}> {
+    const page = query.page;
+    const limit = query.limit;
     const skip = (page - 1) * limit;
 
     const filter: FilterQuery<IPost> = {
         author: userId,
-        deletedAt: null,
     };
 
     if (query.status) {
         filter.status = query.status;
-    }
-
-    if (query.category) {
-        filter.category = query.category;
+    } else {
+        filter.status = "active";
     }
 
     if (query.q) {
-        filter.$or = [{title: {$regex: query.q, $options: "i"}}, {content: {$regex: query.q, $options: "i"}}];
+        const regex = new RegExp(escapeRegex(query.q), "i");
+
+        filter.$or = [{title: regex}, {content: regex}];
     }
 
-    const [posts, total] = await Promise.all([
+    const [docs, total] = await Promise.all([
         PostModel.find(filter)
-        .sort(query.sort ?? "-createdAt")
+        .sort(buildMyPostsSort(query.sort))
         .skip(skip)
         .limit(limit)
-        .populate("author", "name avatar")
-        .lean(),
+        .populate("author", AUTHOR_PUBLIC_FIELDS),
 
         PostModel.countDocuments(filter),
     ]);
 
     return {
-        data: posts,
+        data: docs.map(sanitizePost),
         meta: {
             page,
             limit,
@@ -178,8 +192,7 @@ export const getMyPosts = async (userId: string, query: GetMyPostsQuery) => {
             totalPages: Math.ceil(total / limit),
         },
     };
-};
-
+}
 
 export async function getActivePostById(postId: string): Promise<SanitizedPost> {
     const post = await PostModel.findOne({
@@ -233,7 +246,6 @@ export async function softDeletePost(postId: string, userId: string, role: "user
 
     await post.save();
 }
-
 
 export async function addPostImages(
     postId: string,
