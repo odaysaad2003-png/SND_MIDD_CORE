@@ -3,7 +3,6 @@ import {asyncHandler} from "../../utils/async-handler";
 import {sendSuccess} from "../../utils/api-response";
 import * as postService from "./post.service";
 import { GetMyPostsQuery } from "./post.validation";
-import { deleteLocalFiles ,getPostImagePublicUrl } from "../posts/post.upload.middlewar";
 import { AppError } from "../../utils/app-error";
 
 
