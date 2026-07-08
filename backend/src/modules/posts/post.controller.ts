@@ -3,6 +3,10 @@ import {asyncHandler} from "../../utils/async-handler";
 import {sendSuccess} from "../../utils/api-response";
 import * as postService from "./post.service";
 import { GetMyPostsQuery } from "./post.validation";
+import { deleteLocalFiles ,getPostImagePublicUrl } from "../posts/post.upload.middlewar";
+import { AppError } from "../../utils/app-error";
+
+
 
 export const listPosts = asyncHandler(async (req: Request, res: Response) => {
     const {page, limit, sort, search} = req.query as unknown as {
@@ -72,4 +76,28 @@ export const deletePost = asyncHandler(async (req: Request, res: Response) => {
     await postService.softDeletePost(req.params.postId, req.user!.id, req.user!.role);
 
     res.status(204).send();
+});
+
+
+
+export const uploadPostImages = asyncHandler(async (req: Request, res: Response) => {
+    const files = (req.files as Express.Multer.File[] | undefined) ?? [];
+
+    if (files.length === 0) {
+        throw AppError.badRequest("At least one image is required");
+    }
+
+    try {
+        const imageUrls = files.map(getPostImagePublicUrl);
+
+        const post = await postService.addPostImages(req.params.postId, req.user!.id, req.user!.role, imageUrls);
+
+        sendSuccess(res, {
+            statusCode: 200,
+            data: post,
+        });
+    } catch (error) {
+        await deleteLocalFiles(files);
+        throw error;
+    }
 });
