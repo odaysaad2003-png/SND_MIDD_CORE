@@ -64,4 +64,4 @@ export const getMyPostsQuerySchema = z.object({
         sort: z.enum(["createdAt", "-createdAt", "updatedAt", "-updatedAt"]).optional(),
     }).strict(),
 });
-export type GetMyPostsQuery = z.infer<typeof getMyPostsQuerySchema>;
+export type GetMyPostsQuery = z.infer<typeof getMyPostsQuerySchema>["query"];
