@@ -8,6 +8,7 @@ export interface IPost extends Document {
     content: string;
     author: Types.ObjectId;
     images: string[];
+    imagePublicIds: string[];
     status: PostStatus;
     deletedAt: Date | null;
     createdAt: Date;
@@ -39,6 +40,11 @@ const postSchema = new Schema<IPost>(
         },
 
         images: {
+            type: [String],
+            default: [],
+        },
+
+        imagePublicIds: {
             type: [String],
             default: [],
         },
