@@ -1,5 +1,6 @@
 import { z} from "zod";
 import {Types} from "mongoose"
+import { query } from "express";
 
 export const createPostSchema = z.object({
     body: z
@@ -54,11 +55,13 @@ export const listPostsQuerySchema = z.object({
 
 
 export const getMyPostsQuerySchema = z.object({
-    page: z.coerce.number().int().positive().default(1),
-    limit: z.coerce.number().int().positive().max(50).default(10),
-    q: z.string().trim().optional(),
-    category: z.string().trim().optional(),
-    status: z.enum(["active", "archived", "sold", "pending"]).optional(),
-    sort: z.enum(["createdAt", "-createdAt", "updatedAt", "-updatedAt"]).optional(),
+    query: z.object({
+        page: z.coerce.number().int().positive().default(1),
+        limit: z.coerce.number().int().positive().max(50).default(10),
+        q: z.string().trim().optional(),
+        category: z.string().trim().optional(),
+        status: z.enum(["active", "deleted"]).optional(),
+        sort: z.enum(["createdAt", "-createdAt", "updatedAt", "-updatedAt"]).optional(),
+    }).strict(),
 });
 export type GetMyPostsQuery = z.infer<typeof getMyPostsQuerySchema>;

@@ -22,6 +22,10 @@ const envSchema = z.object({
     .default(10),
     REFRESH_TOKEN_SECRET: z.string().min(32, "REFRESH_TOKEN_SECRET is required"),
     REFRESH_TOKEN_EXPIRES_IN: z.string().min(1, "REFRESH_TOKEN_EXPIRES_IN is required"),
+    CLOUDINARY_CLOUD_NAME: z.string().min(1, "CLOUDINARY_CLOUD_NAME is required"),
+    CLOUDINARY_API_KEY: z.string().min(1, "CLOUDINARY_API_KEY is required"),
+    CLOUDINARY_API_SECRET: z.string().min(1, "CLOUDINARY_API_SECRET is required"),
+    CLOUDINARY_ROOT_FOLDER: z.string().min(1, "CLOUDINARY_ROOT_FOLDER is required").default("snd-dev"),
 });
 
 function loadEnv() {
