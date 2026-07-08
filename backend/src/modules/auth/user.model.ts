@@ -1,6 +1,7 @@
 import {Schema, model, Document, Types} from "mongoose";
 
 export type UserRole = "user" | "admin";
+export type AvatarProvider = "local" | "cloudinary";
 
 export interface IUser extends Document {
     _id: Types.ObjectId;
@@ -11,6 +12,8 @@ export interface IUser extends Document {
     isActive: boolean;
     refreshTokenHash: string | null;
     avatar: string | null;
+    avatarProvider: AvatarProvider | null;
+    avatarPublicId: string | null;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -56,6 +59,18 @@ const userSchema = new Schema<IUser>(
         avatar: {
             type: String,
             default: null,
+        },
+
+        avatarProvider: {
+            type: String,
+            enum: ["local", "cloudinary"],
+            default: null,
+        },
+
+        avatarPublicId: {
+            type: String,
+            default: null,
+            select: false,
         },
     },
     {

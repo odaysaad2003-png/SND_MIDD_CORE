@@ -22,7 +22,7 @@ export const updateMe = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const updateMyAvatar = asyncHandler(async (req: Request, res: Response) => {
-    const user = await userService.updateAvatar(req.user!.id, req.file!.filename);
+    const user = await userService.updateAvatar(req.user!.id, req.file!);
 
     sendSuccess(res, {
         data: user,
