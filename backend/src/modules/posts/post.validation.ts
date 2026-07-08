@@ -1,6 +1,5 @@
-import { z} from "zod";
-import {Types} from "mongoose"
-import { query } from "express";
+import {z} from "zod";
+import {Types} from "mongoose";
 
 export const createPostSchema = z.object({
     body: z
@@ -16,7 +15,6 @@ export const createPostSchema = z.object({
     .strict(),
 });
 
-
 const objectId = z.string().refine((val) => Types.ObjectId.isValid(val), {
     message: "Invalid id",
 });
@@ -25,7 +23,6 @@ export const postIdParamsSchema = z.object({
     params: z.object({postId: objectId}).strict(),
 });
 
-//for prodect request updat or delet
 export const updatePostSchema = z.object({
     params: z.object({postId: objectId}).strict(),
 
@@ -40,8 +37,6 @@ export const updatePostSchema = z.object({
     }),
 });
 
-
-
 export const listPostsQuerySchema = z.object({
     query: z
     .object({
@@ -53,15 +48,16 @@ export const listPostsQuerySchema = z.object({
     .strict(),
 });
 
-
 export const getMyPostsQuerySchema = z.object({
-    query: z.object({
+    query: z
+    .object({
         page: z.coerce.number().int().positive().default(1),
         limit: z.coerce.number().int().positive().max(50).default(10),
-        q: z.string().trim().optional(),
-        category: z.string().trim().optional(),
+        q: z.string().trim().max(100).optional(),
         status: z.enum(["active", "deleted"]).optional(),
-        sort: z.enum(["createdAt", "-createdAt", "updatedAt", "-updatedAt"]).optional(),
-    }).strict(),
+        sort: z.enum(["createdAt", "-createdAt", "updatedAt", "-updatedAt"]).default("-createdAt"),
+    })
+    .strict(),
 });
+
 export type GetMyPostsQuery = z.infer<typeof getMyPostsQuerySchema>["query"];
