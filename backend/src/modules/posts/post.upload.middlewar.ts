@@ -13,6 +13,7 @@ import {
     POST_IMAGES_UPLOAD_DIR,
 } from "../../constants/post.constants";
 
+
 mkdirSync(POST_IMAGES_UPLOAD_DIR, {recursive: true});
 
 const storage = multer.diskStorage({

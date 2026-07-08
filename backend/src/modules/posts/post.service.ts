@@ -2,8 +2,7 @@ import {FilterQuery, Types} from "mongoose";
 import {IPost, PostModel, PostStatus} from "./post.model";
 import {AppError} from "../../utils/app-error";
 import {GetMyPostsQuery} from "./post.validation";
-const AUTHOR_PUBLIC_FIELDS = "name avatar";
-
+import {AUTHOR_PUBLIC_FIELDS, MAX_POST_IMAGES_PER_POST} from "../../constants/post.constants";
 export interface SanitizedPostAuthor {
     id: string;
     name: string;
@@ -233,4 +232,36 @@ export async function softDeletePost(postId: string, userId: string, role: "user
     post.deletedAt = new Date();
 
     await post.save();
+}
+
+
+export async function addPostImages(
+    postId: string,
+    userId: string,
+    role: "user" | "admin",
+    imageUrls: string[]
+): Promise<SanitizedPost> {
+    if (imageUrls.length === 0) {
+        throw AppError.badRequest("At least one image is required");
+    }
+
+    const post = await findOwnedPostOrThrow(postId, userId, role);
+
+    if (post.status === "deleted") {
+        throw AppError.notFound("Post not found");
+    }
+
+    const nextImageCount = post.images.length + imageUrls.length;
+
+    if (nextImageCount > MAX_POST_IMAGES_PER_POST) {
+        throw AppError.badRequest(`A post can have at most ${MAX_POST_IMAGES_PER_POST} images`);
+    }
+
+    post.images.push(...imageUrls);
+
+    await post.save();
+
+    await post.populate("author", AUTHOR_PUBLIC_FIELDS);
+
+    return sanitizePost(post);
 }
