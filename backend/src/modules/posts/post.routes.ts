@@ -20,6 +20,7 @@ import {
     removePostImage,
 } from "./post.controller";
 import {uploadPostImagesMiddleware} from "./post.upload.middlewar";
+import {postCommentsRouter} from "../comments/comment.routes";
 
 const router = Router();
 
@@ -28,6 +29,10 @@ router.get("/", validateRequest(listPostsQuerySchema), listPosts);
 
 // My posts
 router.get("/me", authenticate, validateRequest(getMyPostsQuerySchema), getMyPosts);
+
+// Nested comments (list is public, create requires auth — enforced inside
+// postCommentsRouter itself). mergeParams gives it access to :postId.
+router.use("/:postId/comments", postCommentsRouter);
 
 // Public post details
 router.get("/:postId", validateRequest(postIdParamsSchema), getPost);
