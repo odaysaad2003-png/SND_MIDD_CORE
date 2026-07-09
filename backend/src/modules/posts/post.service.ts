@@ -19,6 +19,7 @@ export interface SanitizedPost {
     author: SanitizedPostAuthor;
     images: string[];
     status: PostStatus;
+    likesCount: number;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -48,6 +49,7 @@ function sanitizePost(post: IPost): SanitizedPost {
         },
         images: post.images,
         status: post.status,
+        likesCount: post.likesCount ?? 0,
         createdAt: post.createdAt,
         updatedAt: post.updatedAt,
     };
