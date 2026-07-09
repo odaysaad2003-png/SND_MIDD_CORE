@@ -19,7 +19,7 @@ import {
     uploadPostImages,
     removePostImage,
 } from "./post.controller";
-import {uploadPostImagesMiddleware} from "./post.upload.middlewar";
+import {uploadPostImagesMiddleware} from "./post.upload.middleware";
 import {postCommentsRouter} from "../comments/comment.routes";
 import {postLikesRouter} from "../likes/like.routes";
 import {postSavesRouter} from "../saves/save.routes";
