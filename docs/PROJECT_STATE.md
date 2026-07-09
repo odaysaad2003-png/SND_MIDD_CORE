@@ -423,3 +423,62 @@ What Must Not Be Changed in Sprint 6:
 - Soft delete semantics (status/deletedAt) on comments.
 - Nested vs direct route split (list/create under posts, update/delete
   under /comments).
+
+  ## Sprint 5B Status — Likes Core
+
+Status: Completed
+
+Files Added:
+backend/src/modules/likes/like.model.ts
+backend/src/modules/likes/like.validation.ts
+backend/src/modules/likes/like.service.ts
+backend/src/modules/likes/like.controller.ts
+backend/src/modules/likes/like.routes.ts
+
+Files Modified:
+backend/src/modules/posts/post.model.ts (added likesCount, default 0, min 0)
+backend/src/modules/posts/post.service.ts (sanitizePost now returns likesCount)
+backend/src/modules/posts/post.routes.ts (mounted /:postId/likes before generic /:postId)
+
+Concepts Learned:
+- Toggle-style soft delete (single row per user+post, flipped between
+  active/deleted) instead of comments/posts' create-once soft-delete —
+  chosen because likes are a many-to-many join, not owned content.
+- Unique compound index as the authoritative race guard, with
+  findOne-first as a fast path and duplicate-key (11000) handling as the
+  fallback, instead of reaching for transactions.
+- Keeping a denormalized counter (Post.likesCount) accurate via atomic
+  $inc/$gt updates rather than counting Like documents on every read.
+
+Architecture Decisions:
+- Likes live in their own module (src/modules/likes), mounted only under
+  posts/:postId/likes — no top-level /api/v1/likes route in this sprint
+  (not required by scope).
+- Likes router mounted before the generic GET /:postId route in
+  post.routes.ts, since Express would otherwise match /:postId/likes as
+  postId="likes" on GET /:postId's sibling routes; this ordering already
+  matches how comments was mounted.
+- POST /likes returns 201 only on genuine creation, 200 for
+  already-liked/restored — DELETE /likes always returns 200 (not 204)
+  since the frontend needs the updated likesCount in the body, a
+  documented exception similar to posts/comments' 204 exception in
+  reverse.
+
+Security Decisions:
+- userId for like/unlike/status always comes from req.user, never from
+  body or params.
+- No body accepted on any likes route — .strict() params-only validation.
+- Like/unlike/status all re-verify the parent post is active
+  (status: "active", deletedAt: null) before touching Like documents.
+
+Known Issues / TODOs:
+- No "posts I liked" listing endpoint yet (index on {user, status,
+  createdAt} is prepared for this, not exposed).
+- likesCount is denormalized; if it were ever to drift, a reconciliation
+  script (count active Likes per post) would be the fix — not needed at
+  current scale.
+
+What Must Not Be Changed in the Next Sprint:
+- Like toggle pattern (single document per post+user, status-flipped).
+- Unique compound index on {post, user}.
+- likesCount kept via atomic $inc, never read-modify-write.
