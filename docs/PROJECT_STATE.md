@@ -505,3 +505,26 @@ Approved Decision:
 
 Status:
 Sprint 5B Likes Core approved after service-level atomic transition refactor.
+## Sprint 5C Status — Saves / Favorites Core
+
+Status: Approved
+
+Completed:
+- Created Saves module with model, validation, service, controller, and routes.
+- Implemented save / unsave / get my save status.
+- Implemented GET /api/v1/saves/me for listing the authenticated user's saved posts.
+- Used single document per user/post pair with status toggling.
+- Added unique compound index on { post, user } to prevent duplicate saves.
+- Used idempotent save/unsave behavior.
+- Used aggregation with lookup/facet to return saved posts with pagination and correct total count.
+- Tested all saves endpoints successfully in Postman.
+
+Approved Decisions:
+- Saves are private user interactions.
+- No savesCount added to PostModel for now.
+- User identity always comes from req.user.
+- Saves are soft-toggled using status active/deleted.
+- Saved posts list only returns active saves whose parent posts are still active.
+
+Status:
+Sprint 5C Saves Core approved after successful Postman testing.
