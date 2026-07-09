@@ -21,6 +21,7 @@ import {
 } from "./post.controller";
 import {uploadPostImagesMiddleware} from "./post.upload.middlewar";
 import {postCommentsRouter} from "../comments/comment.routes";
+import {postLikesRouter} from "../likes/like.routes";
 
 const router = Router();
 
@@ -33,6 +34,10 @@ router.get("/me", authenticate, validateRequest(getMyPostsQuerySchema), getMyPos
 // Nested comments (list is public, create requires auth — enforced inside
 // postCommentsRouter itself). mergeParams gives it access to :postId.
 router.use("/:postId/comments", postCommentsRouter);
+
+// Nested likes — must be mounted before the generic "/:postId" GET route
+// below, or "/:postId" would swallow "/:postId/likes" as an id segment.
+router.use("/:postId/likes", postLikesRouter);
 
 // Public post details
 router.get("/:postId", validateRequest(postIdParamsSchema), getPost);

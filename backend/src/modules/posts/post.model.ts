@@ -11,6 +11,7 @@ export interface IPost extends Document {
     imagePublicIds: string[];
     status: PostStatus;
     deletedAt: Date | null;
+    likesCount: number;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -58,6 +59,12 @@ const postSchema = new Schema<IPost>(
         deletedAt: {
             type: Date,
             default: null,
+        },
+
+        likesCount: {
+            type: Number,
+            default: 0,
+            min: 0,
         },
     },
     {
