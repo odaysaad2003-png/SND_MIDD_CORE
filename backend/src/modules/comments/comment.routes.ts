@@ -1,12 +1,7 @@
 import {Router} from "express";
 import {authenticate} from "../../middleware/authenticate";
 import {validateRequest} from "../../middleware/validate-request";
-import {
-    createCommentSchema,
-    listCommentsQuerySchema,
-    updateCommentSchema,
-    commentIdParamsSchema,
-} from "./comment.validation";
+import {createCommentSchema,listCommentsQuerySchema,updateCommentSchema,commentIdParamsSchema} from "./comment.validation";
 import {createComment, listComments, updateComment, deleteComment} from "./comment.controller";
 
 // Nested under /api/v1/posts/:postId/comments — mounted from post.routes.ts.
