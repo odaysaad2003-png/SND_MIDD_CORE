@@ -293,3 +293,84 @@ What Must Not Be Changed in Sprint 5:
 - Align status filters with current PostStatus: active | deleted.
 - Consider sanitizing getMyPosts response like listPosts and getPost.
 - Remove unused imports from post.validation.ts.
+
+# PROJECT_STATE.md — SND Community Core Backend
+
+## Current Sprint
+
+Sprint 4 — Posts, Pagination, Query Params, and Cloud Image Upload
+
+## Current Status
+
+Sprint 4 core backend work is completed and tested.
+
+The project now supports:
+- Authenticated users
+- User profile retrieval and update
+- Avatar upload using Cloudinary
+- Posts CRUD basics
+- Public posts listing with pagination/search/sort
+- My posts endpoint with pagination/query params
+- Single post details
+- Post image upload using Cloudinary
+- Single post image removal from both MongoDB and Cloudinary
+- Ownership checks for protected post mutations
+
+---
+
+## Completed Milestones
+
+### 1. Auth v2
+
+Completed and tested:
+- Register
+- Login
+- Me endpoint
+- Access token protected routes
+- Refresh token flow
+- Change password
+
+Main endpoints:
+- POST /api/v1/auth/register
+- POST /api/v1/auth/login
+- GET /api/v1/auth/me
+- POST /api/v1/auth/refresh
+- PATCH /api/v1/auth/change-password
+
+---
+
+### 2. Users / Profile / Avatar
+
+Completed and tested:
+- GET current user
+- Update profile name
+- Upload avatar
+- Replace existing avatar
+- Delete old avatar from storage
+
+Main endpoints:
+- GET /api/v1/users/me
+- PATCH /api/v1/users/me
+- PATCH /api/v1/users/me/avatar
+
+Avatar upload was migrated from local disk storage to Cloudinary.
+
+Current avatar architecture:
+- API response exposes avatar as URL string.
+- MongoDB stores:
+  - avatar
+  - avatarProvider
+  - avatarPublicId
+
+Reason:
+- avatar is used by frontend for display.
+- avatarPublicId is used internally for Cloudinary deletion.
+- avatarProvider helps distinguish local legacy avatars from Cloudinary avatars.
+
+Cloudinary folder structure for avatars:
+
+```txt
+snd-dev/
+  users/
+    <userId>/
+      avatar/
