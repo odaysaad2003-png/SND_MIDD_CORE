@@ -10,6 +10,7 @@ import authRoutes from "./modules/auth/auth.routes";
 import path from "path";
 import usersRoutes from "./modules/users/user.routes";
 import postRoutes from "./modules/posts/post.routes";
+import commentsRoutes from "./modules/comments/comment.routes";
 
 export function createApp(): Express {
     const app = express();
@@ -32,13 +33,13 @@ export function createApp(): Express {
 
     app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
-
     // Routes
     app.use("/api/v1/health", healthRoutes);
     app.use("/api/v1/auth", authRoutes);
-    
+
     app.use("/api/v1/users", usersRoutes);
     app.use("/api/v1/posts", postRoutes);
+    app.use("/api/v1/comments", commentsRoutes);
 
     // Error handling
 
