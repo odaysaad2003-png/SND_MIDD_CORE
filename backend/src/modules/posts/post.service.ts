@@ -300,3 +300,46 @@ export async function addPostImages(
         throw error;
     }
 }
+
+export async function removePostImage(
+    postId: string,
+    userId: string,
+    role: "user" | "admin",
+    imageUrl: string
+): Promise<SanitizedPost> {
+    const post = await findOwnedPostOrThrow(postId, userId, role);
+
+    if (post.status === "deleted") {
+        throw AppError.notFound("Post not found");
+    }
+
+    if (!Array.isArray(post.imagePublicIds)) {
+        post.imagePublicIds = [];
+    }
+
+    const imageIndex = post.images.findIndex((url) => url === imageUrl);
+
+    if (imageIndex === -1) {
+        throw AppError.notFound("Image not found on this post");
+    }
+
+    const publicIdToDelete = post.imagePublicIds[imageIndex] ?? null;
+
+    post.images.splice(imageIndex, 1);
+
+    if (post.imagePublicIds.length > imageIndex) {
+        post.imagePublicIds.splice(imageIndex, 1);
+    }
+
+    await post.save();
+
+    await post.populate("author", AUTHOR_PUBLIC_FIELDS);
+
+    if (publicIdToDelete) {
+        deleteImageFromCloudinary(publicIdToDelete).catch(() => {
+            // Best-effort cleanup. The DB is already updated, so do not fail the request here.
+        });
+    }
+
+    return sanitizePost(post);
+}

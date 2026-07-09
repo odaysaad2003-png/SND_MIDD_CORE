@@ -1,18 +1,33 @@
 import {Router} from "express";
 import {authenticate} from "../../middleware/authenticate";
 import {validateRequest} from "../../middleware/validate-request";
-import {createPostSchema, updatePostSchema, postIdParamsSchema, listPostsQuerySchema} from "./post.validation";
-import {listPosts, getPost, createPost, updatePost, deletePost, getMyPosts, uploadPostImages} from "./post.controller";
-import {getMyPostsQuerySchema} from "./post.validation";
+import {
+    createPostSchema,
+    updatePostSchema,
+    postIdParamsSchema,
+    listPostsQuerySchema,
+    getMyPostsQuerySchema,
+    removePostImageSchema,
+} from "./post.validation";
+import {
+    listPosts,
+    getPost,
+    createPost,
+    updatePost,
+    deletePost,
+    getMyPosts,
+    uploadPostImages,
+    removePostImage,
+} from "./post.controller";
 import {uploadPostImagesMiddleware} from "./post.upload.middlewar";
+
 const router = Router();
 
 // Public feed
 router.get("/", validateRequest(listPostsQuerySchema), listPosts);
 
-
+// My posts
 router.get("/me", authenticate, validateRequest(getMyPostsQuerySchema), getMyPosts);
-
 
 // Public post details
 router.get("/:postId", validateRequest(postIdParamsSchema), getPost);
@@ -21,7 +36,16 @@ router.get("/:postId", validateRequest(postIdParamsSchema), getPost);
 router.post("/", authenticate, validateRequest(createPostSchema), createPost);
 
 // Protected upload post images
-router.post("/:postId/images",authenticate,validateRequest(postIdParamsSchema),uploadPostImagesMiddleware,uploadPostImages);
+router.post(
+    "/:postId/images",
+    authenticate,
+    validateRequest(postIdParamsSchema),
+    uploadPostImagesMiddleware,
+    uploadPostImages
+);
+
+// Protected remove one post image
+router.delete("/:postId/images", authenticate, validateRequest(removePostImageSchema), removePostImage);
 
 // Protected update post
 router.patch("/:postId", authenticate, validateRequest(updatePostSchema), updatePost);

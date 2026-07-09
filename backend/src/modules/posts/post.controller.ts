@@ -2,10 +2,8 @@ import {Request, Response} from "express";
 import {asyncHandler} from "../../utils/async-handler";
 import {sendSuccess} from "../../utils/api-response";
 import * as postService from "./post.service";
-import { GetMyPostsQuery } from "./post.validation";
-import { AppError } from "../../utils/app-error";
-
-
+import {GetMyPostsQuery} from "./post.validation";
+import {AppError} from "../../utils/app-error";
 
 export const listPosts = asyncHandler(async (req: Request, res: Response) => {
     const {page, limit, sort, search} = req.query as unknown as {
@@ -22,7 +20,10 @@ export const listPosts = asyncHandler(async (req: Request, res: Response) => {
         search,
     });
 
-    sendSuccess(res, {data: posts,meta:{...meta}});
+    sendSuccess(res, {
+        data: posts,
+        meta: {...meta},
+    });
 });
 
 export const createPost = asyncHandler(async (req: Request, res: Response) => {
@@ -45,8 +46,7 @@ export const getPost = asyncHandler(async (req: Request, res: Response) => {
     });
 });
 
-
-export const getMyPosts = asyncHandler(async (req, res) => {
+export const getMyPosts = asyncHandler(async (req: Request, res: Response) => {
     const userId = req.user!.id;
 
     const result = await postService.getMyPosts(userId, req.query as unknown as GetMyPostsQuery);
@@ -57,8 +57,6 @@ export const getMyPosts = asyncHandler(async (req, res) => {
         meta: {...result.meta},
     });
 });
-
-
 
 export const updatePost = asyncHandler(async (req: Request, res: Response) => {
     const post = await postService.updatePost(req.params.postId, req.user!.id, req.user!.role, {
@@ -77,8 +75,6 @@ export const deletePost = asyncHandler(async (req: Request, res: Response) => {
     res.status(204).send();
 });
 
-
-
 export const uploadPostImages = asyncHandler(async (req: Request, res: Response) => {
     const files = (req.files as Express.Multer.File[] | undefined) ?? [];
 
@@ -87,6 +83,15 @@ export const uploadPostImages = asyncHandler(async (req: Request, res: Response)
     }
 
     const post = await postService.addPostImages(req.params.postId, req.user!.id, req.user!.role, files);
+
+    sendSuccess(res, {
+        statusCode: 200,
+        data: post,
+    });
+});
+
+export const removePostImage = asyncHandler(async (req: Request, res: Response) => {
+    const post = await postService.removePostImage(req.params.postId, req.user!.id, req.user!.role, req.body.imageUrl);
 
     sendSuccess(res, {
         statusCode: 200,

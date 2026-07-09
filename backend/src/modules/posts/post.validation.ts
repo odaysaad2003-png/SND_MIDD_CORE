@@ -60,4 +60,14 @@ export const getMyPostsQuerySchema = z.object({
     .strict(),
 });
 
+export const removePostImageSchema = z.object({
+    params: z.object({postId: objectId}).strict(),
+
+    body: z
+    .object({
+        imageUrl: z.string().trim().url("Invalid image URL"),
+    })
+    .strict(),
+});
+
 export type GetMyPostsQuery = z.infer<typeof getMyPostsQuerySchema>["query"];
