@@ -11,7 +11,7 @@ import path from "path";
 import usersRoutes from "./modules/users/user.routes";
 import postRoutes from "./modules/posts/post.routes";
 import commentsRoutes from "./modules/comments/comment.routes";
-
+import savesRoutes from "./modules/saves/save.routes";
 export function createApp(): Express {
     const app = express();
 
@@ -40,6 +40,8 @@ export function createApp(): Express {
     app.use("/api/v1/users", usersRoutes);
     app.use("/api/v1/posts", postRoutes);
     app.use("/api/v1/comments", commentsRoutes);
+    app.use("/api/v1/saves", savesRoutes);
+
 
     // Error handling
 
