@@ -482,3 +482,26 @@ What Must Not Be Changed in the Next Sprint:
 - Like toggle pattern (single document per post+user, status-flipped).
 - Unique compound index on {post, user}.
 - likesCount kept via atomic $inc, never read-modify-write.
+
+Sprint 5B Likes Core: Approved after service-level atomic transition refactor.
+## Sprint 5B Status — Likes Core
+
+Status: Approved
+
+Completed:
+- Created Likes module with model, validation, service, controller, and routes.
+- Added unique compound index on { post, user } to prevent duplicate likes.
+- Implemented idempotent like/unlike behavior.
+- Added likesCount to Post model.
+- Included likesCount in sanitized post responses.
+- Mounted likes routes under /api/v1/posts/:postId/likes.
+- Tested all likes endpoints successfully in Postman.
+
+Approved Decision:
+- Likes use a single document per post/user pair.
+- Like state is toggled between active and deleted.
+- likesCount is maintained as a denormalized counter on Post.
+- User identity always comes from req.user, never from the client body.
+
+Status:
+Sprint 5B Likes Core approved after service-level atomic transition refactor.
