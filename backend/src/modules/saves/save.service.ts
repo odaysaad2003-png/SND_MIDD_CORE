@@ -214,7 +214,7 @@ export async function listMySavedPosts(
         },
         {
             $sort: {
-                createdAt: sortDirection,
+                updatedAt: sortDirection,
                 _id: sortDirection,
             },
         },
@@ -262,7 +262,7 @@ export async function listMySavedPosts(
                             likesCount: {
                                 $ifNull: ["$post.likesCount", 0],
                             },
-                            savedAt: "$createdAt",
+                            savedAt: "$updatedAt",
                             createdAt: "$post.createdAt",
                             updatedAt: "$post.updatedAt",
                         },
