@@ -374,3 +374,52 @@ snd-dev/
   users/
     <userId>/
       avatar/
+
+
+      ## Sprint 5 Status — Comments Core
+
+Status: Completed
+
+Files Added:
+backend/src/modules/comments/comment.model.ts
+backend/src/modules/comments/comment.validation.ts
+backend/src/modules/comments/comment.service.ts
+backend/src/modules/comments/comment.controller.ts
+backend/src/modules/comments/comment.routes.ts
+
+Files Modified:
+backend/src/modules/posts/post.routes.ts (mounted nested /:postId/comments)
+backend/src/app.ts (mounted /api/v1/comments)
+
+Concepts Learned:
+- Nested vs top-level resource routing (mergeParams) for a sub-resource
+  that's addressed two different ways (via its parent, and directly by id).
+- Reusing the soft-delete/ownership pattern from posts on a second resource,
+  confirming the pattern generalizes.
+- Guarding a sub-resource's existence on its parent's active status.
+
+Architecture Decisions:
+- Comments live in their own module (src/modules/comments), not nested
+  inside posts/, keeping the posts module unmodified except for route
+  mounting.
+- DELETE /comments/:commentId returns 204, consistent with the post-delete
+  exception already documented in API_CONVENTIONS.md.
+- Soft-deleted comments are excluded from listing and treated as not-found
+  for update/delete — mirrors posts exactly.
+
+Security Decisions:
+- author/status/deletedAt never accepted from the client.
+- Ownership/role check lives in comment.service.ts only.
+- Create/list both re-verify the parent post is active before touching
+  comments, preventing orphaned or leaked comment threads on deleted posts.
+
+Known Issues / TODOs:
+- No comment count denormalized on the post document yet (not required by
+  this sprint; consider for a future sprint if post cards need it).
+- No reports/moderation hook for comments yet (Sprint 6 scope).
+
+What Must Not Be Changed in Sprint 6:
+- comments module layering and ownership pattern.
+- Soft delete semantics (status/deletedAt) on comments.
+- Nested vs direct route split (list/create under posts, update/delete
+  under /comments).
