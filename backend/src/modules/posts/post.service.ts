@@ -3,6 +3,8 @@ import {IPost, PostModel, PostStatus} from "./post.model";
 import {AppError} from "../../utils/app-error";
 import {GetMyPostsQuery} from "./post.validation";
 import {AUTHOR_PUBLIC_FIELDS, MAX_POST_IMAGES_PER_POST} from "../../constants/post.constants";
+import {deleteImageFromCloudinary, uploadImageToCloudinary} from "../../shared/storage/cloudinary-storage.service";
+import type {UploadedAsset} from "../../shared/storage/storage.types";
 
 export interface SanitizedPostAuthor {
     id: string;
@@ -251,9 +253,9 @@ export async function addPostImages(
     postId: string,
     userId: string,
     role: "user" | "admin",
-    imageUrls: string[]
+    files: Express.Multer.File[]
 ): Promise<SanitizedPost> {
-    if (imageUrls.length === 0) {
+    if (files.length === 0) {
         throw AppError.badRequest("At least one image is required");
     }
 
@@ -263,17 +265,38 @@ export async function addPostImages(
         throw AppError.notFound("Post not found");
     }
 
-    const nextImageCount = post.images.length + imageUrls.length;
+    const nextImageCount = post.images.length + files.length;
 
     if (nextImageCount > MAX_POST_IMAGES_PER_POST) {
         throw AppError.badRequest(`A post can have at most ${MAX_POST_IMAGES_PER_POST} images`);
     }
 
-    post.images.push(...imageUrls);
+    if (!Array.isArray(post.imagePublicIds)) {
+        post.imagePublicIds = [];
+    }
 
-    await post.save();
+    const uploadedImages: UploadedAsset[] = [];
 
-    await post.populate("author", AUTHOR_PUBLIC_FIELDS);
+    try {
+        for (const file of files) {
+            const uploadedImage = await uploadImageToCloudinary(file, {
+                folder: `posts/${post.author.toString()}/${post._id.toString()}/images`,
+            });
 
-    return sanitizePost(post);
+            uploadedImages.push(uploadedImage);
+        }
+
+        post.images.push(...uploadedImages.map((image) => image.url));
+        post.imagePublicIds.push(...uploadedImages.map((image) => image.publicId));
+
+        await post.save();
+
+        await post.populate("author", AUTHOR_PUBLIC_FIELDS);
+
+        return sanitizePost(post);
+    } catch (error) {
+        await Promise.allSettled(uploadedImages.map((image) => deleteImageFromCloudinary(image.publicId)));
+
+        throw error;
+    }
 }
