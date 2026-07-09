@@ -2,7 +2,7 @@ import bcrypt from "bcryptjs";
 import {AppError} from "../../utils/app-error";
 import {logger} from "../../utils/logger";
 import {env} from "../../config/env";
-import {UserModel, IUser} from "./user.model";
+import {UserModel, IUser} from "../users/user.model";
 import {signAccessToken, signRefreshToken, verifyRefreshToken} from "../../utils/tokens";
 
 export interface SafeUser {

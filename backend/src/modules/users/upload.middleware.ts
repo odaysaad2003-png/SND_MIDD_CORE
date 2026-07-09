@@ -1,7 +1,7 @@
 import multer, {FileFilterCallback} from "multer";
 import {NextFunction, Request, Response} from "express";
-import {ALLOWED_AVATAR_MIME_TO_EXT, MAX_AVATAR_SIZE_BYTES, MAX_AVATAR_SIZE_MB} from "../config/upload";
-import {AppError} from "../utils/app-error";
+import {ALLOWED_AVATAR_MIME_TO_EXT, MAX_AVATAR_SIZE_BYTES, MAX_AVATAR_SIZE_MB} from "../../config/upload";
+import {AppError} from "../../utils/app-error";
 
 function fileFilter(_req: Request, file: Express.Multer.File, cb: FileFilterCallback): void {
     if (!ALLOWED_AVATAR_MIME_TO_EXT[file.mimetype]) {

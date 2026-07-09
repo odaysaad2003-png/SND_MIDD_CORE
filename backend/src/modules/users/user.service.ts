@@ -1,6 +1,6 @@
 import fs from "fs/promises";
 import path from "path";
-import {IUser, UserModel, UserRole} from "../auth/user.model";
+import {IUser, UserModel, UserRole} from "./user.model";
 import {AppError} from "../../utils/app-error";
 import {AVATAR_PUBLIC_URL_PATH, AVATAR_UPLOAD_DIR} from "../../config/upload";
 import {deleteImageFromCloudinary, uploadImageToCloudinary} from "../../shared/storage/cloudinary-storage.service";

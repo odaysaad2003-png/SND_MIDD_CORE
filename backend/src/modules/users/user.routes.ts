@@ -1,7 +1,7 @@
 import {Router} from "express";
 import {authenticate} from "../../middleware/authenticate";
 import {validateRequest} from "../../middleware/validate-request";
-import {uploadAvatar} from "../../middleware/upload.middleware";
+import {uploadAvatar} from "./upload.middleware";
 import {updateProfileSchema} from "./user.validation";
 import {getMe, updateMe, updateMyAvatar} from "./user.controller";
 
