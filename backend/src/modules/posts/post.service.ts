@@ -111,6 +111,7 @@ export async function listActivePosts(options: {
 
     const filter: FilterQuery<IPost> = {
         status: "active",
+        deletedAt: null,
     };
 
     if (search) {
@@ -167,8 +168,13 @@ export async function getMyPosts(
 
     if (query.status) {
         filter.status = query.status;
+
+        if (query.status === "active") {
+            filter.deletedAt = null;
+        }
     } else {
         filter.status = "active";
+        filter.deletedAt = null;
     }
 
     if (query.q) {
@@ -202,6 +208,7 @@ export async function getActivePostById(postId: string): Promise<SanitizedPost> 
     const post = await PostModel.findOne({
         _id: postId,
         status: "active",
+        deletedAt: null,
     }).populate("author", AUTHOR_PUBLIC_FIELDS);
 
     if (!post) {
