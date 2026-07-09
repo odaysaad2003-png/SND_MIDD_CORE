@@ -22,7 +22,7 @@ import {
 import {uploadPostImagesMiddleware} from "./post.upload.middlewar";
 import {postCommentsRouter} from "../comments/comment.routes";
 import {postLikesRouter} from "../likes/like.routes";
-
+import {postSavesRouter} from "../saves/save.routes";
 const router = Router();
 
 // Public feed
@@ -38,6 +38,9 @@ router.use("/:postId/comments", postCommentsRouter);
 // Nested likes — must be mounted before the generic "/:postId" GET route
 // below, or "/:postId" would swallow "/:postId/likes" as an id segment.
 router.use("/:postId/likes", postLikesRouter);
+
+// Nested saves — must be mounted before the generic "/:postId" route.
+router.use("/:postId/saves", postSavesRouter);
 
 // Public post details
 router.get("/:postId", validateRequest(postIdParamsSchema), getPost);
