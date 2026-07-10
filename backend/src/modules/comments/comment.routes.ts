@@ -1,11 +1,12 @@
 import {Router} from "express";
 import {authenticate} from "../../middleware/authenticate";
+import {requireActiveUser} from "../../middleware/require-active-user";
 import {validateRequest} from "../../middleware/validate-request";
 import {
     createCommentSchema,
     listCommentsQuerySchema,
     updateCommentSchema,
-    commentIdParamsSchema
+    commentIdParamsSchema,
 } from "./comment.validation";
 import {createComment, listComments, updateComment, deleteComment} from "./comment.controller";
 import {commentReportsRouter} from "../reports/report.routes";
@@ -15,14 +16,26 @@ import {commentReportsRouter} from "../reports/report.routes";
 export const postCommentsRouter = Router({mergeParams: true});
 
 postCommentsRouter.get("/", validateRequest(listCommentsQuerySchema), listComments);
-postCommentsRouter.post("/", authenticate, validateRequest(createCommentSchema), createComment);
+postCommentsRouter.post("/", authenticate, requireActiveUser, validateRequest(createCommentSchema), createComment);
 
 // Direct comment mutation routes — mounted at /api/v1/comments in app.ts.
 export const commentsRouter = Router();
 
 commentsRouter.use("/:commentId/reports", commentReportsRouter);
 
-commentsRouter.patch("/:commentId", authenticate, validateRequest(updateCommentSchema), updateComment);
-commentsRouter.delete("/:commentId", authenticate, validateRequest(commentIdParamsSchema), deleteComment);
+commentsRouter.patch(
+    "/:commentId",
+    authenticate,
+    requireActiveUser,
+    validateRequest(updateCommentSchema),
+    updateComment
+);
+commentsRouter.delete(
+    "/:commentId",
+    authenticate,
+    requireActiveUser,
+    validateRequest(commentIdParamsSchema),
+    deleteComment
+);
 
 export default commentsRouter;

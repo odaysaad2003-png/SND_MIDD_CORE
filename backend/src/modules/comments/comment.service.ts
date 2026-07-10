@@ -67,11 +67,13 @@ function sanitizeComment(comment: IComment): SanitizedComment {
     };
 }
 
-async function findOwnedActiveCommentOrThrow(
-    commentId: string,
-    userId: string,
-    role: "user" | "admin"
-): Promise<IComment> {
+/**
+ * Phase 7A: owner-only. Admin override was intentionally removed for the
+ * same reason as posts — silently rewriting/deleting another user's comment
+ * through the owner route leaves no moderation trail. Admin hide/restore is
+ * planned as a dedicated, auditable Phase 7C action instead.
+ */
+async function findOwnedActiveCommentOrThrow(commentId: string, userId: string): Promise<IComment> {
     const comment = await CommentModel.findOne({
         _id: commentId,
         status: "active",
@@ -86,7 +88,7 @@ async function findOwnedActiveCommentOrThrow(
 
     const isOwner = comment.author.toString() === userId;
 
-    if (!isOwner && role !== "admin") {
+    if (!isOwner) {
         throw AppError.forbidden("You do not have permission to modify this comment");
     }
 
@@ -126,7 +128,11 @@ export async function listCommentsForPost(
     const skip = (page - 1) * limit;
 
     const [docs, total] = await Promise.all([
-        CommentModel.find(filter).sort(buildSort(sort)).skip(skip).limit(limit).populate("author", AUTHOR_PUBLIC_FIELDS),
+        CommentModel.find(filter)
+        .sort(buildSort(sort))
+        .skip(skip)
+        .limit(limit)
+        .populate("author", AUTHOR_PUBLIC_FIELDS),
 
         CommentModel.countDocuments(filter),
     ]);
@@ -142,13 +148,8 @@ export async function listCommentsForPost(
     };
 }
 
-export async function updateComment(
-    commentId: string,
-    userId: string,
-    role: "user" | "admin",
-    content: string
-): Promise<SanitizedComment> {
-    const comment = await findOwnedActiveCommentOrThrow(commentId, userId, role);
+export async function updateComment(commentId: string, userId: string, content: string): Promise<SanitizedComment> {
+    const comment = await findOwnedActiveCommentOrThrow(commentId, userId);
 
     comment.content = content;
 
@@ -158,8 +159,8 @@ export async function updateComment(
     return sanitizeComment(comment);
 }
 
-export async function softDeleteComment(commentId: string, userId: string, role: "user" | "admin"): Promise<void> {
-    const comment = await findOwnedActiveCommentOrThrow(commentId, userId, role);
+export async function softDeleteComment(commentId: string, userId: string): Promise<void> {
+    const comment = await findOwnedActiveCommentOrThrow(commentId, userId);
 
     comment.status = "deleted";
     comment.deletedAt = new Date();

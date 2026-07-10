@@ -25,12 +25,7 @@ export const listComments = asyncHandler(async (req: Request, res: Response) => 
 });
 
 export const updateComment = asyncHandler(async (req: Request, res: Response) => {
-    const comment = await commentService.updateComment(
-        req.params.commentId,
-        req.user!.id,
-        req.user!.role,
-        req.body.content
-    );
+    const comment = await commentService.updateComment(req.params.commentId, req.user!.id, req.body.content);
 
     sendSuccess(res, {
         data: comment,
@@ -38,7 +33,7 @@ export const updateComment = asyncHandler(async (req: Request, res: Response) =>
 });
 
 export const deleteComment = asyncHandler(async (req: Request, res: Response) => {
-    await commentService.softDeleteComment(req.params.commentId, req.user!.id, req.user!.role);
+    await commentService.softDeleteComment(req.params.commentId, req.user!.id);
 
     res.status(204).send();
 });
