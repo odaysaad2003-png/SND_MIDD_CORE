@@ -59,7 +59,7 @@ export const getMyPosts = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const updatePost = asyncHandler(async (req: Request, res: Response) => {
-    const post = await postService.updatePost(req.params.postId, req.user!.id, req.user!.role, {
+    const post = await postService.updatePost(req.params.postId, req.user!.id, {
         title: req.body.title,
         content: req.body.content,
     });
@@ -70,7 +70,7 @@ export const updatePost = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const deletePost = asyncHandler(async (req: Request, res: Response) => {
-    await postService.softDeletePost(req.params.postId, req.user!.id, req.user!.role);
+    await postService.softDeletePost(req.params.postId, req.user!.id);
 
     res.status(204).send();
 });
@@ -82,7 +82,7 @@ export const uploadPostImages = asyncHandler(async (req: Request, res: Response)
         throw AppError.badRequest("At least one image is required");
     }
 
-    const post = await postService.addPostImages(req.params.postId, req.user!.id, req.user!.role, files);
+    const post = await postService.addPostImages(req.params.postId, req.user!.id, files);
 
     sendSuccess(res, {
         statusCode: 200,
@@ -91,7 +91,7 @@ export const uploadPostImages = asyncHandler(async (req: Request, res: Response)
 });
 
 export const removePostImage = asyncHandler(async (req: Request, res: Response) => {
-    const post = await postService.removePostImage(req.params.postId, req.user!.id, req.user!.role, req.body.imageUrl);
+    const post = await postService.removePostImage(req.params.postId, req.user!.id, req.body.imageUrl);
 
     sendSuccess(res, {
         statusCode: 200,

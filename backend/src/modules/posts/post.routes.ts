@@ -1,5 +1,6 @@
 import {Router} from "express";
 import {authenticate} from "../../middleware/authenticate";
+import {requireActiveUser} from "../../middleware/require-active-user";
 import {validateRequest} from "../../middleware/validate-request";
 import {
     createPostSchema,
@@ -30,7 +31,7 @@ const router = Router();
 router.get("/", validateRequest(listPostsQuerySchema), listPosts);
 
 // My posts
-router.get("/me", authenticate, validateRequest(getMyPostsQuerySchema), getMyPosts);
+router.get("/me", authenticate, requireActiveUser, validateRequest(getMyPostsQuerySchema), getMyPosts);
 
 // Nested comments (list is public, create requires auth — enforced inside
 // postCommentsRouter itself). mergeParams gives it access to :postId.
@@ -50,24 +51,31 @@ router.use("/:postId/reports", postReportsRouter);
 router.get("/:postId", validateRequest(postIdParamsSchema), getPost);
 
 // Protected create post
-router.post("/", authenticate, validateRequest(createPostSchema), createPost);
+router.post("/", authenticate, requireActiveUser, validateRequest(createPostSchema), createPost);
 
 // Protected upload post images
 router.post(
     "/:postId/images",
     authenticate,
+    requireActiveUser,
     validateRequest(postIdParamsSchema),
     uploadPostImagesMiddleware,
     uploadPostImages
 );
 
 // Protected remove one post image
-router.delete("/:postId/images", authenticate, validateRequest(removePostImageSchema), removePostImage);
+router.delete(
+    "/:postId/images",
+    authenticate,
+    requireActiveUser,
+    validateRequest(removePostImageSchema),
+    removePostImage
+);
 
 // Protected update post
-router.patch("/:postId", authenticate, validateRequest(updatePostSchema), updatePost);
+router.patch("/:postId", authenticate, requireActiveUser, validateRequest(updatePostSchema), updatePost);
 
 // Protected delete post
-router.delete("/:postId", authenticate, validateRequest(postIdParamsSchema), deletePost);
+router.delete("/:postId", authenticate, requireActiveUser, validateRequest(postIdParamsSchema), deletePost);
 
 export default router;

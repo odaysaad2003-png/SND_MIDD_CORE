@@ -89,12 +89,19 @@ async function findPostOrThrow(postId: string): Promise<IPost> {
     return post;
 }
 
-async function findOwnedPostOrThrow(postId: string, userId: string, role: "user" | "admin"): Promise<IPost> {
+/**
+ * Phase 7A: owner-only. Admin override was intentionally removed — an
+ * administrator editing/deleting a user's post through this route would be
+ * indistinguishable from the user's own edit, with no moderation trail.
+ * Dedicated admin hide/restore operations are planned for Phase 7C as a
+ * separate, auditable action instead of a silent override here.
+ */
+async function findOwnedPostOrThrow(postId: string, userId: string): Promise<IPost> {
     const post = await findPostOrThrow(postId);
 
     const isOwner = post.author.toString() === userId;
 
-    if (!isOwner && role !== "admin") {
+    if (!isOwner) {
         throw AppError.forbidden("You do not have permission to modify this post");
     }
 
@@ -221,10 +228,9 @@ export async function getActivePostById(postId: string): Promise<SanitizedPost> 
 export async function updatePost(
     postId: string,
     userId: string,
-    role: "user" | "admin",
     updates: {title?: string; content?: string}
 ): Promise<SanitizedPost> {
-    const post = await findOwnedPostOrThrow(postId, userId, role);
+    const post = await findOwnedPostOrThrow(postId, userId);
 
     if (post.status === "deleted") {
         throw AppError.notFound("Post not found");
@@ -245,8 +251,8 @@ export async function updatePost(
     return sanitizePost(post);
 }
 
-export async function softDeletePost(postId: string, userId: string, role: "user" | "admin"): Promise<void> {
-    const post = await findOwnedPostOrThrow(postId, userId, role);
+export async function softDeletePost(postId: string, userId: string): Promise<void> {
+    const post = await findOwnedPostOrThrow(postId, userId);
 
     if (post.status === "deleted") {
         return;
@@ -261,14 +267,13 @@ export async function softDeletePost(postId: string, userId: string, role: "user
 export async function addPostImages(
     postId: string,
     userId: string,
-    role: "user" | "admin",
     files: Express.Multer.File[]
 ): Promise<SanitizedPost> {
     if (files.length === 0) {
         throw AppError.badRequest("At least one image is required");
     }
 
-    const post = await findOwnedPostOrThrow(postId, userId, role);
+    const post = await findOwnedPostOrThrow(postId, userId);
 
     if (post.status === "deleted") {
         throw AppError.notFound("Post not found");
@@ -310,13 +315,8 @@ export async function addPostImages(
     }
 }
 
-export async function removePostImage(
-    postId: string,
-    userId: string,
-    role: "user" | "admin",
-    imageUrl: string
-): Promise<SanitizedPost> {
-    const post = await findOwnedPostOrThrow(postId, userId, role);
+export async function removePostImage(postId: string, userId: string, imageUrl: string): Promise<SanitizedPost> {
+    const post = await findOwnedPostOrThrow(postId, userId);
 
     if (post.status === "deleted") {
         throw AppError.notFound("Post not found");
