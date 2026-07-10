@@ -1,5 +1,6 @@
 import {Router} from "express";
 import {authenticate} from "../../middleware/authenticate";
+import {requireActiveUser} from "../../middleware/require-active-user";
 import {validateRequest} from "../../middleware/validate-request";
 import {savePostIdParamsSchema, listMySavedPostsQuerySchema} from "./save.validation";
 import {savePost, unsavePost, getMySaveStatus, listMySavedPosts} from "./save.controller";
@@ -8,13 +9,13 @@ import {savePost, unsavePost, getMySaveStatus, listMySavedPosts} from "./save.co
 // mergeParams is required so req.params.postId is visible here.
 export const postSavesRouter = Router({mergeParams: true});
 
-postSavesRouter.post("/", authenticate, validateRequest(savePostIdParamsSchema), savePost);
-postSavesRouter.delete("/", authenticate, validateRequest(savePostIdParamsSchema), unsavePost);
-postSavesRouter.get("/me", authenticate, validateRequest(savePostIdParamsSchema), getMySaveStatus);
+postSavesRouter.post("/", authenticate, requireActiveUser, validateRequest(savePostIdParamsSchema), savePost);
+postSavesRouter.delete("/", authenticate, requireActiveUser, validateRequest(savePostIdParamsSchema), unsavePost);
+postSavesRouter.get("/me", authenticate, requireActiveUser, validateRequest(savePostIdParamsSchema), getMySaveStatus);
 
 // Mounted under /api/v1/saves.
 export const savesRouter = Router();
 
-savesRouter.get("/me", authenticate, validateRequest(listMySavedPostsQuerySchema), listMySavedPosts);
+savesRouter.get("/me", authenticate, requireActiveUser, validateRequest(listMySavedPostsQuerySchema), listMySavedPosts);
 
 export default savesRouter;
