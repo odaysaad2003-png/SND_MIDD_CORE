@@ -3,7 +3,8 @@ import {ReportReason, ReportStatus, ReportTargetType} from "./report.constants";
 import {PostModel} from "../posts/post.model";
 import {CommentModel} from "../comments/comment.model";
 import {AppError} from "../../utils/app-error";
-import { IReport, ReportModel } from "./report.model";
+import {IReport, ReportModel} from "./report.model";
+import {assertCurrentAdmin} from "../../shared/authorization/admin.service";
 
 interface PaginationMeta {
     page: number;
@@ -410,13 +411,18 @@ export async function createReport(input: CreateReportInput): Promise<SanitizedR
     return getReportById(report._id.toString());
 }
 
-export async function listReports(options: {
-    page: number;
-    limit: number;
-    sort: "latest" | "oldest";
-    status?: ReportStatus;
-    targetType?: ReportTargetType;
-}): Promise<{data: SanitizedReport[]; meta: PaginationMeta}> {
+export async function listReports(
+    adminUserId: string,
+    options: {
+        page: number;
+        limit: number;
+        sort: "latest" | "oldest";
+        status?: ReportStatus;
+        targetType?: ReportTargetType;
+    }
+): Promise<{data: SanitizedReport[]; meta: PaginationMeta}> {
+    await assertCurrentAdmin(adminUserId);
+
     const {page, limit, sort, status, targetType} = options;
     const skip = (page - 1) * limit;
 
@@ -448,6 +454,19 @@ export async function listReports(options: {
     };
 }
 
+/**
+ * Admin-facing read. getReportById itself stays unprotected because it's
+ * also reused internally by createReport (reporter reading their own new
+ * report) and updateReportStatus (returning the updated report) — neither
+ * of those call sites is an "admin browsing the queue" operation, so gating
+ * getReportById itself would incorrectly block a reporter from seeing their
+ * own submission.
+ */
+export async function getReportByIdForAdmin(reportId: string, adminUserId: string): Promise<SanitizedReport> {
+    await assertCurrentAdmin(adminUserId);
+    return getReportById(reportId);
+}
+
 export async function getReportById(reportId: string): Promise<SanitizedReport> {
     const [result] = await ReportModel.aggregate<ReportAggregationResult>(
         buildReportAggregationPipeline({
@@ -477,6 +496,8 @@ export async function updateReportStatus(
         adminNote?: string;
     }
 ): Promise<SanitizedReport> {
+    await assertCurrentAdmin(adminUserId);
+
     const adminNote = normalizeOptionalText(data.adminNote);
 
     const report = await ReportModel.findByIdAndUpdate(
