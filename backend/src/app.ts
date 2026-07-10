@@ -12,6 +12,7 @@ import usersRoutes from "./modules/users/user.routes";
 import postRoutes from "./modules/posts/post.routes";
 import commentsRoutes from "./modules/comments/comment.routes";
 import savesRoutes from "./modules/saves/save.routes";
+import reportsRoutes from "./modules/reports/report.routes";
 export function createApp(): Express {
     const app = express();
 
@@ -35,12 +36,14 @@ export function createApp(): Express {
 
     // Routes
     app.use("/api/v1/health", healthRoutes);
+    
     app.use("/api/v1/auth", authRoutes);
 
     app.use("/api/v1/users", usersRoutes);
     app.use("/api/v1/posts", postRoutes);
     app.use("/api/v1/comments", commentsRoutes);
     app.use("/api/v1/saves", savesRoutes);
+    app.use("/api/v1/reports", reportsRoutes);
 
 
     // Error handling

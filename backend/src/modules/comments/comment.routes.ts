@@ -8,6 +8,7 @@ import {
     commentIdParamsSchema
 } from "./comment.validation";
 import {createComment, listComments, updateComment, deleteComment} from "./comment.controller";
+import {commentReportsRouter} from "../reports/report.routes";
 
 // Nested under /api/v1/posts/:postId/comments — mounted from post.routes.ts.
 // mergeParams is required so req.params.postId is visible in this router.
@@ -18,6 +19,8 @@ postCommentsRouter.post("/", authenticate, validateRequest(createCommentSchema),
 
 // Direct comment mutation routes — mounted at /api/v1/comments in app.ts.
 export const commentsRouter = Router();
+
+commentsRouter.use("/:commentId/reports", commentReportsRouter);
 
 commentsRouter.patch("/:commentId", authenticate, validateRequest(updateCommentSchema), updateComment);
 commentsRouter.delete("/:commentId", authenticate, validateRequest(commentIdParamsSchema), deleteComment);

@@ -23,6 +23,7 @@ import {uploadPostImagesMiddleware} from "./post.upload.middleware";
 import {postCommentsRouter} from "../comments/comment.routes";
 import {postLikesRouter} from "../likes/like.routes";
 import {postSavesRouter} from "../saves/save.routes";
+import {postReportsRouter} from "../reports/report.routes";
 const router = Router();
 
 // Public feed
@@ -41,6 +42,9 @@ router.use("/:postId/likes", postLikesRouter);
 
 // Nested saves — must be mounted before the generic "/:postId" route.
 router.use("/:postId/saves", postSavesRouter);
+
+// Nested reports — users can report a specific post.
+router.use("/:postId/reports", postReportsRouter);
 
 // Public post details
 router.get("/:postId", validateRequest(postIdParamsSchema), getPost);
