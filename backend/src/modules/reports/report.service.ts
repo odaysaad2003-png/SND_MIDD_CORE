@@ -467,7 +467,7 @@ export async function getReportByIdForAdmin(reportId: string, adminUserId: strin
     return getReportById(reportId);
 }
 
-export async function getReportById(reportId: string): Promise<SanitizedReport> {
+ async function getReportById(reportId: string): Promise<SanitizedReport> {
     const [result] = await ReportModel.aggregate<ReportAggregationResult>(
         buildReportAggregationPipeline({
             match: {

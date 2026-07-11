@@ -2,14 +2,15 @@ import bcrypt from "bcryptjs";
 import {AppError} from "../../utils/app-error";
 import {logger} from "../../utils/logger";
 import {env} from "../../config/env";
-import {UserModel, IUser} from "../users/user.model";
+import {UserModel, IUser, UserRole} from "../users/user.model";
 import {signAccessToken, signRefreshToken, verifyRefreshToken} from "../../utils/tokens";
 
-export interface SafeUser {
+export interface SanitizedUser {
     id: string;
     name: string;
     email: string;
-    role: "user" | "admin";
+    role: UserRole;
+    avatar: string | null;
     isActive: boolean;
     createdAt: Date;
     updatedAt: Date;
@@ -20,12 +21,13 @@ interface AuthTokens {
     refreshToken: string;
 }
 
-function toSafeUser(user: IUser): SafeUser {
+ export function sanitizeUser(user: IUser): SanitizedUser {
     return {
         id: user._id.toString(),
         name: user.name,
         email: user.email,
         role: user.role,
+        avatar: user.avatar,
         isActive: user.isActive,
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
@@ -76,7 +78,7 @@ export async function registerUser(input: {name: string; email: string; password
         });
 
         return {
-            user: toSafeUser(user),
+            user: sanitizeUser(user),
             ...tokens,
         };
     } catch (error) {
@@ -112,7 +114,7 @@ export async function loginUser(input: {email: string; password: string}) {
     });
 
     return {
-        user: toSafeUser(user),
+        user: sanitizeUser(user),
         ...tokens,
     };
 }
@@ -152,7 +154,7 @@ export async function refreshTokens(refreshToken: string) {
     const tokens = await issueAndStoreTokens(user);
 
     return {
-        user: toSafeUser(user),
+        user: sanitizeUser(user),
         ...tokens,
     };
 }
@@ -184,12 +186,12 @@ export async function logoutUser(refreshToken: string): Promise<void> {
     await user.save();
 }
 
-export async function getCurrentUser(userId: string): Promise<SafeUser> {
+export async function getCurrentUser(userId: string): Promise<SanitizedUser> {
     const user = await UserModel.findById(userId);
 
     if (!user || !user.isActive) {
         throw AppError.unauthorized("User not found or inactive");
     }
 
-    return toSafeUser(user);
+    return sanitizeUser(user);
 }

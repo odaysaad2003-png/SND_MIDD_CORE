@@ -37,7 +37,7 @@ export const reportComment = asyncHandler(async (req: Request, res: Response) =>
 export const listReports = asyncHandler(async (req: Request, res: Response) => {
     const {page, limit, sort, status, targetType} = req.query as unknown as ListReportsQuery;
 
-    const result = await reportService.listReports({
+    const result = await reportService.listReports(req.user!.id, {
         page,
         limit,
         sort,
@@ -52,7 +52,7 @@ export const listReports = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const getReport = asyncHandler(async (req: Request, res: Response) => {
-    const report = await reportService.getReportById(req.params.reportId);
+    const report = await reportService.getReportByIdForAdmin(req.params.reportId, req.user!.id);
 
     sendSuccess(res, {
         data: report,

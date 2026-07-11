@@ -23,7 +23,7 @@ const postSchema = new Schema<IPost>(
             required: true,
             trim: true,
             minlength: 3,
-            maxlength: 120,
+            maxlength: 100,
         },
 
         content: {

@@ -5,30 +5,11 @@ import {AppError} from "../../utils/app-error";
 import {AVATAR_PUBLIC_URL_PATH, AVATAR_UPLOAD_DIR} from "../../config/upload";
 import {deleteImageFromCloudinary, uploadImageToCloudinary} from "../../shared/storage/cloudinary-storage.service";
 import type {UploadedAsset} from "../../shared/storage/storage.types";
+import type {SanitizedUser} from "../auth/auth.service"
+import {sanitizeUser} from "../auth/auth.service"
 
-export interface SanitizedUser {
-    id: string;
-    name: string;
-    email: string;
-    role: UserRole;
-    avatar: string | null;
-    isActive: boolean;
-    createdAt: Date;
-    updatedAt: Date;
-}
 
-function sanitizeUser(user: IUser): SanitizedUser {
-    return {
-        id: user._id.toString(),
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        avatar: user.avatar,
-        isActive: user.isActive,
-        createdAt: user.createdAt,
-        updatedAt: user.updatedAt,
-    };
-}
+
 
 async function findActiveUserOrThrow(userId: string): Promise<IUser> {
     const user = await UserModel.findById(userId).select("+avatarPublicId");
