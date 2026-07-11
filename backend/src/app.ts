@@ -13,6 +13,8 @@ import postRoutes from "./modules/posts/post.routes";
 import commentsRoutes from "./modules/comments/comment.routes";
 import savesRoutes from "./modules/saves/save.routes";
 import reportsRoutes from "./modules/reports/report.routes";
+import adminRoutes from "./modules/admin/admin.routes";
+
 export function createApp(): Express {
     const app = express();
 
@@ -36,7 +38,7 @@ export function createApp(): Express {
 
     // Routes
     app.use("/api/v1/health", healthRoutes);
-    
+
     app.use("/api/v1/auth", authRoutes);
 
     app.use("/api/v1/users", usersRoutes);
@@ -44,7 +46,8 @@ export function createApp(): Express {
     app.use("/api/v1/comments", commentsRoutes);
     app.use("/api/v1/saves", savesRoutes);
     app.use("/api/v1/reports", reportsRoutes);
-
+    
+    app.use("/api/v1/admin", adminRoutes); // Sprint 7B
 
     // Error handling
 
