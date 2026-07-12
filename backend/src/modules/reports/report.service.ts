@@ -1,11 +1,12 @@
-import {FilterQuery, PipelineStage, Types} from "mongoose";
-import {ReportReason, ReportStatus, ReportTargetType} from "./report.constants";
+import mongoose, {FilterQuery, PipelineStage, Types} from "mongoose";
+import {ReportReason, ReportReviewStatus, ReportStatus, ReportTargetType} from "./report.constants";
 import {PostModel} from "../posts/post.model";
 import {CommentModel} from "../comments/comment.model";
 import {AppError} from "../../utils/app-error";
 import {IReport, ReportModel} from "./report.model";
 import {assertCurrentAdmin} from "../../shared/authorization/admin.service";
 import {buildPublicPostVisibilityFilter} from "../posts/post-visibility";
+import {recordReportStatusAuditEvent} from "../audit/audit-event.service";
 
 interface PaginationMeta {
     page: number;
@@ -485,36 +486,71 @@ export async function getReportByIdForAdmin(reportId: string, adminUserId: strin
     return report;
 }
 
+export interface UpdateReportStatusContext {
+    requestId?: string;
+}
+
+function auditActionForReportStatus(
+    status: ReportReviewStatus
+): "REPORT_REVIEWED" | "REPORT_DISMISSED" | "REPORT_ACTIONED" {
+    if (status === "reviewed") return "REPORT_REVIEWED";
+    if (status === "dismissed") return "REPORT_DISMISSED";
+    return "REPORT_ACTIONED";
+}
+
 export async function updateReportStatus(
     reportId: string,
     adminUserId: string,
     data: {
-        status: ReportStatus;
+        status: ReportReviewStatus;
         adminNote?: string;
-    }
+    },
+    context: UpdateReportStatusContext = {}
 ): Promise<SanitizedReport> {
-    await assertCurrentAdmin(adminUserId);
-
     const adminNote = normalizeOptionalText(data.adminNote);
+    const session = await mongoose.startSession();
 
-    const report = await ReportModel.findByIdAndUpdate(
-        reportId,
-        {
-            $set: {
-                status: data.status,
-                reviewedBy: adminUserId,
-                reviewedAt: new Date(),
-                ...(adminNote !== undefined ? {adminNote} : {}),
-            },
-        },
-        {
-            new: true,
-        }
-    ).select("_id");
+    try {
+        await session.withTransaction(async () => {
+            await assertCurrentAdmin(adminUserId, session);
 
-    if (!report) {
-        throw AppError.notFound("Report not found");
+            const report = await ReportModel.findById(reportId).session(session);
+
+            if (!report) {
+                throw AppError.notFound("Report not found");
+            }
+
+            if (report.status !== "pending") {
+                throw AppError.conflict("Report has already been reviewed");
+            }
+
+            const previousState = {status: report.status};
+
+            report.status = data.status;
+            report.reviewedBy = new Types.ObjectId(adminUserId);
+            report.reviewedAt = new Date();
+
+            if (adminNote !== undefined) {
+                report.adminNote = adminNote;
+            }
+
+            await report.save({session});
+
+            await recordReportStatusAuditEvent(
+                {
+                    actor: adminUserId,
+                    action: auditActionForReportStatus(data.status),
+                    targetId: reportId,
+                    previousState,
+                    newState: {status: report.status},
+                    requestId: context.requestId,
+                },
+                session
+            );
+        });
+    } finally {
+        await session.endSession();
     }
 
-    return getReportById(report._id.toString());
+    return getReportById(reportId);
 }

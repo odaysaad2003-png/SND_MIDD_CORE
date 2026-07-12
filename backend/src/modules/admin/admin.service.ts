@@ -110,7 +110,7 @@ export async function updateUserStatus(
         await session.withTransaction(async () => {
             await assertCurrentAdmin(adminUserId, session);
 
-            const targetUser = await UserModel.findById(targetUserId).select("+refreshTokenHash").session(session);
+            const targetUser = await UserModel.findById(targetUserId).select("+refreshTokenHash +refreshTokenId").session(session);
 
             if (!targetUser) {
                 throw AppError.notFound("User not found");
@@ -129,6 +129,7 @@ export async function updateUserStatus(
 
                 targetUser.isActive = false;
                 targetUser.refreshTokenHash = null;
+                targetUser.refreshTokenId = null;
                 targetUser.suspendedAt = new Date();
                 targetUser.suspendedBy = new Types.ObjectId(adminUserId);
                 targetUser.suspensionReason = input.reason;
@@ -141,7 +142,7 @@ export async function updateUserStatus(
                 targetUser.suspendedAt = null;
                 targetUser.suspendedBy = null;
                 targetUser.suspensionReason = null;
-                // refreshTokenHash is left as-is (already null from the
+                // Refresh session fields are left as-is (already null from the
                 // suspending write). The old session is never restored —
                 // the user must log in again.
             }

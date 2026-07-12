@@ -60,10 +60,15 @@ export const getReport = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const updateReportStatus = asyncHandler(async (req: Request, res: Response) => {
-    const report = await reportService.updateReportStatus(req.params.reportId, req.user!.id, {
-        status: req.body.status,
-        adminNote: req.body.adminNote,
-    });
+    const report = await reportService.updateReportStatus(
+        req.params.reportId,
+        req.user!.id,
+        {
+            status: req.body.status,
+            adminNote: req.body.adminNote,
+        },
+        {requestId: req.requestId}
+    );
 
     sendSuccess(res, {
         data: report,

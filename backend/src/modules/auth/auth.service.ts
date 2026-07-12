@@ -1,3 +1,4 @@
+import {randomUUID} from "crypto";
 import bcrypt from "bcryptjs";
 import {AppError} from "../../utils/app-error";
 import {logger} from "../../utils/logger";
@@ -21,7 +22,13 @@ interface AuthTokens {
     refreshToken: string;
 }
 
- export function sanitizeUser(user: IUser): SanitizedUser {
+interface PreparedRefreshSession {
+    tokens: AuthTokens;
+    refreshTokenHash: string;
+    refreshTokenId: string;
+}
+
+export function sanitizeUser(user: IUser): SanitizedUser {
     return {
         id: user._id.toString(),
         name: user.name,
@@ -38,7 +45,9 @@ function isMongoDuplicateKeyError(error: unknown): boolean {
     return typeof error === "object" && error !== null && "code" in error && (error as {code?: unknown}).code === 11000;
 }
 
-async function issueAndStoreTokens(user: IUser): Promise<AuthTokens> {
+async function prepareRefreshSession(user: IUser): Promise<PreparedRefreshSession> {
+    const refreshTokenId = randomUUID();
+
     const accessToken = signAccessToken({
         sub: user._id.toString(),
         role: user.role,
@@ -46,13 +55,37 @@ async function issueAndStoreTokens(user: IUser): Promise<AuthTokens> {
 
     const refreshToken = signRefreshToken({
         sub: user._id.toString(),
+        sid: refreshTokenId,
     });
 
-    user.refreshTokenHash = await bcrypt.hash(refreshToken, env.BCRYPT_SALT_ROUNDS);
+    const refreshTokenHash = await bcrypt.hash(refreshToken, env.BCRYPT_SALT_ROUNDS);
+
+    return {
+        tokens: {accessToken, refreshToken},
+        refreshTokenHash,
+        refreshTokenId,
+    };
+}
+
+async function issueAndStoreTokens(user: IUser): Promise<AuthTokens> {
+    const session = await prepareRefreshSession(user);
+
+    user.refreshTokenHash = session.refreshTokenHash;
+    user.refreshTokenId = session.refreshTokenId;
 
     await user.save();
 
-    return {accessToken, refreshToken};
+    return session.tokens;
+}
+
+function refreshSessionIdMatches(tokenSessionId: string | undefined, storedSessionId: string | null): boolean {
+    if (tokenSessionId === undefined) {
+        // Compatibility path for refresh tokens issued before sid was added.
+        // After the next successful rotation, every session has an ID.
+        return storedSessionId === null;
+    }
+
+    return tokenSessionId === storedSessionId;
 }
 
 export async function registerUser(input: {name: string; email: string; password: string}) {
@@ -128,7 +161,7 @@ export async function refreshTokens(refreshToken: string) {
         throw AppError.unauthorized("Invalid or expired refresh token");
     }
 
-    const user = await UserModel.findById(payload.sub).select("+refreshTokenHash");
+    const user = await UserModel.findById(payload.sub).select("+refreshTokenHash +refreshTokenId");
 
     if (!user || !user.refreshTokenHash) {
         throw AppError.unauthorized("Invalid refresh token");
@@ -138,24 +171,69 @@ export async function refreshTokens(refreshToken: string) {
         throw AppError.forbidden("This account has been deactivated");
     }
 
-    const matches = await bcrypt.compare(refreshToken, user.refreshTokenHash);
+    const currentRefreshTokenHash = user.refreshTokenHash;
+    const currentRefreshTokenId = user.refreshTokenId ?? null;
 
-    if (!matches) {
-        user.refreshTokenHash = null;
-        await user.save();
-
-        logger.warn("Refresh token reuse suspected — session revoked", {
+    if (!refreshSessionIdMatches(payload.sid, currentRefreshTokenId)) {
+        logger.warn("Stale refresh token rejected", {
             userId: user._id.toString(),
         });
 
         throw AppError.unauthorized("Refresh token is no longer valid. Please log in again.");
     }
 
-    const tokens = await issueAndStoreTokens(user);
+    const matches = await bcrypt.compare(refreshToken, currentRefreshTokenHash);
+
+    if (!matches) {
+        await UserModel.updateOne(
+            {
+                _id: user._id,
+                refreshTokenHash: currentRefreshTokenHash,
+                refreshTokenId: currentRefreshTokenId,
+            },
+            {
+                $set: {
+                    refreshTokenHash: null,
+                    refreshTokenId: null,
+                },
+            }
+        );
+
+        logger.warn("Refresh token verification failed — current session revoked", {
+            userId: user._id.toString(),
+        });
+
+        throw AppError.unauthorized("Refresh token is no longer valid. Please log in again.");
+    }
+
+    const nextSession = await prepareRefreshSession(user);
+
+    const rotationResult = await UserModel.updateOne(
+        {
+            _id: user._id,
+            isActive: true,
+            refreshTokenHash: currentRefreshTokenHash,
+            refreshTokenId: currentRefreshTokenId,
+        },
+        {
+            $set: {
+                refreshTokenHash: nextSession.refreshTokenHash,
+                refreshTokenId: nextSession.refreshTokenId,
+            },
+        }
+    );
+
+    if (rotationResult.modifiedCount !== 1) {
+        logger.warn("Concurrent refresh token rotation rejected", {
+            userId: user._id.toString(),
+        });
+
+        throw AppError.unauthorized("Refresh token is no longer valid. Please log in again.");
+    }
 
     return {
         user: sanitizeUser(user),
-        ...tokens,
+        ...nextSession.tokens,
     };
 }
 
@@ -170,20 +248,38 @@ export async function logoutUser(refreshToken: string): Promise<void> {
         return;
     }
 
-    const user = await UserModel.findById(payload.sub).select("+refreshTokenHash");
+    const user = await UserModel.findById(payload.sub).select("+refreshTokenHash +refreshTokenId");
 
     if (!user || !user.refreshTokenHash) {
         return;
     }
 
-    const matches = await bcrypt.compare(refreshToken, user.refreshTokenHash);
+    const currentRefreshTokenHash = user.refreshTokenHash;
+    const currentRefreshTokenId = user.refreshTokenId ?? null;
+
+    if (!refreshSessionIdMatches(payload.sid, currentRefreshTokenId)) {
+        return;
+    }
+
+    const matches = await bcrypt.compare(refreshToken, currentRefreshTokenHash);
 
     if (!matches) {
         return;
     }
 
-    user.refreshTokenHash = null;
-    await user.save();
+    await UserModel.updateOne(
+        {
+            _id: user._id,
+            refreshTokenHash: currentRefreshTokenHash,
+            refreshTokenId: currentRefreshTokenId,
+        },
+        {
+            $set: {
+                refreshTokenHash: null,
+                refreshTokenId: null,
+            },
+        }
+    );
 }
 
 export async function getCurrentUser(userId: string): Promise<SanitizedUser> {

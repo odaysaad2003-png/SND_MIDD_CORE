@@ -11,6 +11,7 @@ export interface IUser extends Document {
     role: UserRole;
     isActive: boolean;
     refreshTokenHash: string | null;
+    refreshTokenId: string | null;
     avatar: string | null;
     avatarProvider: AvatarProvider | null;
     avatarPublicId: string | null;
@@ -29,6 +30,7 @@ const userSchema = new Schema<IUser>(
         role: {type: String, enum: ["user", "admin"], default: "user"},
         isActive: {type: Boolean, default: true},
         refreshTokenHash: {type: String, default: null, select: false},
+        refreshTokenId: {type: String, default: null, select: false},
         avatar: {type: String, default: null},
         avatarProvider: {type: String, enum: ["local", "cloudinary"], default: null},
         avatarPublicId: {type: String, default: null, select: false},

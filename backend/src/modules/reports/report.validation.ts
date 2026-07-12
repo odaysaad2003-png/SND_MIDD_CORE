@@ -1,6 +1,6 @@
 import {z} from "zod";
 import {Types} from "mongoose";
-import {REPORT_REASONS, REPORT_STATUSES, REPORT_TARGET_TYPES} from "./report.constants";
+import {REPORT_REASONS, REPORT_REVIEW_STATUSES, REPORT_STATUSES, REPORT_TARGET_TYPES} from "./report.constants";
 
 const objectId = z.string().refine((val) => Types.ObjectId.isValid(val), {
     message: "Invalid id",
@@ -49,7 +49,7 @@ export const updateReportStatusSchema = z.object({
 
     body: z
     .object({
-        status: z.enum(REPORT_STATUSES),
+        status: z.enum(REPORT_REVIEW_STATUSES),
         adminNote: z.string().trim().max(1000, "Admin note must be at most 1000 characters").optional(),
     })
     .strict(),

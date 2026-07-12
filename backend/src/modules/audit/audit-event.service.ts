@@ -90,3 +90,43 @@ export async function recordPostModerationAuditEvent(
         {session}
     );
 }
+
+
+export interface ReportStatusAuditState {
+    status: "pending" | "reviewed" | "dismissed" | "actioned";
+}
+
+interface RecordReportStatusAuditEventInput {
+    actor: string;
+    action: "REPORT_REVIEWED" | "REPORT_DISMISSED" | "REPORT_ACTIONED";
+    targetId: string;
+    previousState: ReportStatusAuditState;
+    newState: ReportStatusAuditState;
+    requestId?: string;
+}
+
+/**
+ * Records the report workflow transition in the same transaction as the
+ * Report write. The audit reason is derived from the allowlisted state
+ * transition; the optional admin note remains on the Report itself.
+ */
+export async function recordReportStatusAuditEvent(
+    input: RecordReportStatusAuditEventInput,
+    session: ClientSession
+): Promise<void> {
+    await AuditEventModel.create(
+        [
+            {
+                actor: input.actor,
+                action: input.action,
+                targetType: "report",
+                targetId: input.targetId,
+                reason: `Report status changed from ${input.previousState.status} to ${input.newState.status}`,
+                previousState: input.previousState,
+                newState: input.newState,
+                requestId: input.requestId,
+            },
+        ],
+        {session}
+    );
+}

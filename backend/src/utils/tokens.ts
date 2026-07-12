@@ -8,6 +8,12 @@ export interface AccessTokenPayload {
 
 export interface RefreshTokenPayload {
     sub: string;
+    sid: string;
+}
+
+export interface VerifiedRefreshTokenPayload {
+    sub: string;
+    sid?: string;
 }
 
 export function signAccessToken(payload: AccessTokenPayload): string {
@@ -26,6 +32,9 @@ export function signRefreshToken(payload: RefreshTokenPayload): string {
     } as SignOptions);
 }
 
-export function verifyRefreshToken(token: string, options?: {ignoreExpiration?: boolean}): RefreshTokenPayload {
-    return jwt.verify(token, env.REFRESH_TOKEN_SECRET, options) as RefreshTokenPayload;
+export function verifyRefreshToken(
+    token: string,
+    options?: {ignoreExpiration?: boolean}
+): VerifiedRefreshTokenPayload {
+    return jwt.verify(token, env.REFRESH_TOKEN_SECRET, options) as VerifiedRefreshTokenPayload;
 }
