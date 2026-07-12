@@ -2,10 +2,11 @@ import path from "path";
 import cors from "cors";
 import express, { Express } from "express";
 import helmet from "helmet";
+import { corsOptions } from "./config/cors";
 import { env, isProduction } from "./config/env";
 import { errorHandler, notFoundHandler } from "./middleware/error-handler";
 import { generalRateLimiter } from "./middleware/rate-limiter";
-import { requestId, REQUEST_ID_HEADER } from "./middleware/request-id";
+import { requestId } from "./middleware/request-id";
 import { requestLogger } from "./middleware/request-logger";
 import adminRoutes from "./modules/admin/admin.routes";
 import authRoutes from "./modules/auth/auth.routes";
@@ -33,14 +34,7 @@ export function createApp(): Express {
   app.use(requestLogger);
   app.use(helmet());
 
-  app.use(
-    cors({
-      origin: env.CORS_ORIGIN,
-      credentials: true,
-      exposedHeaders: [REQUEST_ID_HEADER],
-      maxAge: 600,
-    })
-  );
+  app.use(cors(corsOptions));
 
   // Operational probes must remain reachable even when the API limiter is saturated.
   app.use("/api/v1/health", healthRoutes);

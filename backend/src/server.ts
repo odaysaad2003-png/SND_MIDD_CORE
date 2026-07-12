@@ -4,8 +4,6 @@ import { connectDB, disconnectDB } from "./config/db";
 import { env } from "./config/env";
 import { logger } from "./utils/logger";
 
-const SHUTDOWN_TIMEOUT_MS = 10_000;
-
 function getErrorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
 }
@@ -22,17 +20,17 @@ function registerShutdownHandlers(server: Server): void {
     isShuttingDown = true;
     logger.info("Graceful shutdown started", {
       reason,
-      timeoutMs: SHUTDOWN_TIMEOUT_MS,
+      timeoutMs: env.SHUTDOWN_TIMEOUT_MS,
     });
 
     const forceShutdownTimer = setTimeout(() => {
       logger.error("Graceful shutdown timed out; forcing connection closure", {
         reason,
-        timeoutMs: SHUTDOWN_TIMEOUT_MS,
+        timeoutMs: env.SHUTDOWN_TIMEOUT_MS,
       });
       server.closeAllConnections();
       process.exit(1);
-    }, SHUTDOWN_TIMEOUT_MS);
+    }, env.SHUTDOWN_TIMEOUT_MS);
 
     forceShutdownTimer.unref();
 
@@ -91,6 +89,10 @@ async function start(): Promise<void> {
   const server = app.listen(env.PORT, () => {
     logger.info(`Server listening on port ${env.PORT}`, {
       env: env.NODE_ENV,
+      trustProxyHops: env.TRUST_PROXY_HOPS,
+      corsOrigins: env.CORS_ORIGINS.length,
+      mongoMaxPoolSize: env.MONGODB_MAX_POOL_SIZE,
+      mongooseAutoIndex: env.MONGOOSE_AUTO_INDEX,
     });
   });
 

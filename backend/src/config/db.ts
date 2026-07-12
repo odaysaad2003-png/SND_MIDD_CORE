@@ -1,31 +1,47 @@
 import mongoose from "mongoose";
-import { env } from "./env";
 import { logger } from "../utils/logger";
+import { env } from "./env";
 
-/**
- * Single place that owns the Mongoose connection.
- * Never logs the raw MONGODB_URI (it may contain credentials) —
- * only host/db name are logged.
- */
-export async function connectDB(): Promise<void> {
-  mongoose.set("strictQuery", true);
+let listenersRegistered = false;
+
+function registerConnectionListeners(): void {
+  if (listenersRegistered) {
+    return;
+  }
+
+  listenersRegistered = true;
 
   mongoose.connection.on("connected", () => {
-    const { host, name } = mongoose.connection;
-    logger.info("✅ MongoDB connected successfully");
+    logger.info("MongoDB connected", {
+      database: mongoose.connection.name,
+      maxPoolSize: env.MONGODB_MAX_POOL_SIZE,
+      autoIndex: env.MONGOOSE_AUTO_INDEX,
+    });
   });
 
-  mongoose.connection.on("error", (err) => {
-    logger.error("MongoDB connection error", { message: err?.message });
+  mongoose.connection.on("error", (error) => {
+    logger.error("MongoDB connection error", {
+      message: error instanceof Error ? error.message : String(error),
+    });
   });
 
   mongoose.connection.on("disconnected", () => {
     logger.warn("MongoDB disconnected");
   });
+}
 
-  // Fail fast instead of hanging indefinitely if Mongo is unreachable.
+/**
+ * Owns the Mongoose connection lifecycle. The raw connection URI is never logged.
+ */
+export async function connectDB(): Promise<void> {
+  mongoose.set("strictQuery", true);
+  mongoose.set("bufferCommands", false);
+  registerConnectionListeners();
+
   await mongoose.connect(env.MONGODB_URI, {
-    serverSelectionTimeoutMS: 5000,
+    serverSelectionTimeoutMS: env.MONGODB_SERVER_SELECTION_TIMEOUT_MS,
+    maxPoolSize: env.MONGODB_MAX_POOL_SIZE,
+    autoIndex: env.MONGOOSE_AUTO_INDEX,
   });
 }
 
