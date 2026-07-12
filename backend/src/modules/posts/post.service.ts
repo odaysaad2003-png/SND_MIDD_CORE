@@ -5,6 +5,7 @@ import {GetMyPostsQuery} from "./post.validation";
 import {AUTHOR_PUBLIC_FIELDS, MAX_POST_IMAGES_PER_POST} from "../../constants/post.constants";
 import {deleteImageFromCloudinary, uploadImageToCloudinary} from "../../shared/storage/cloudinary-storage.service";
 import type {UploadedAsset} from "../../shared/storage/storage.types";
+import {buildPublicPostVisibilityFilter} from "./post-visibility";
 
 export interface SanitizedPostAuthor {
     id: string;
@@ -116,16 +117,14 @@ export async function listActivePosts(options: {
 }): Promise<{posts: SanitizedPost[]; meta: PaginationMeta}> {
     const {page, limit, sort, search} = options;
 
-    const filter: FilterQuery<IPost> = {
-        status: "active",
-        deletedAt: null,
-    };
+    const additionalClauses: FilterQuery<IPost>[] = [];
 
     if (search) {
         const regex = new RegExp(escapeRegex(search), "i");
-
-        filter.$or = [{title: regex}, {content: regex}];
+        additionalClauses.push({$or: [{title: regex}, {content: regex}]});
     }
+
+    const filter = buildPublicPostVisibilityFilter(additionalClauses);
 
     const skip = (page - 1) * limit;
 
@@ -154,6 +153,10 @@ export async function createPost(userId: string, data: {title: string; content: 
         images: [],
         status: "active",
         deletedAt: null,
+        moderationStatus: "visible",
+        hiddenAt: null,
+        hiddenBy: null,
+        moderationReason: null,
     });
 
     await post.populate("author", AUTHOR_PUBLIC_FIELDS);
@@ -212,11 +215,9 @@ export async function getMyPosts(
 }
 
 export async function getActivePostById(postId: string): Promise<SanitizedPost> {
-    const post = await PostModel.findOne({
-        _id: postId,
-        status: "active",
-        deletedAt: null,
-    }).populate("author", AUTHOR_PUBLIC_FIELDS);
+    const post = await PostModel.findOne(
+        buildPublicPostVisibilityFilter([{_id: postId}])
+    ).populate("author", AUTHOR_PUBLIC_FIELDS);
 
     if (!post) {
         throw AppError.notFound("Post not found");
