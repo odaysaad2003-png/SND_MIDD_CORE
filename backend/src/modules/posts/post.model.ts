@@ -1,6 +1,7 @@
 import {Schema, model, Document, Types} from "mongoose";
 
 export type PostStatus = "active" | "deleted";
+export type PostModerationStatus = "visible" | "hidden";
 
 export interface IPost extends Document {
     _id: Types.ObjectId;
@@ -11,6 +12,10 @@ export interface IPost extends Document {
     imagePublicIds: string[];
     status: PostStatus;
     deletedAt: Date | null;
+    moderationStatus?: PostModerationStatus;
+    hiddenAt: Date | null;
+    hiddenBy: Types.ObjectId | null;
+    moderationReason: string | null;
     likesCount: number;
     createdAt: Date;
     updatedAt: Date;
@@ -58,6 +63,32 @@ const postSchema = new Schema<IPost>(
 
         deletedAt: {
             type: Date,
+            default: null,
+        },
+
+        // Sprint 7C — separate Admin moderation lifecycle. These fields
+        // never replace or override the owner status/deletedAt lifecycle.
+        moderationStatus: {
+            type: String,
+            enum: ["visible", "hidden"],
+            default: "visible",
+        },
+
+        hiddenAt: {
+            type: Date,
+            default: null,
+        },
+
+        hiddenBy: {
+            type: Schema.Types.ObjectId,
+            ref: "User",
+            default: null,
+        },
+
+        moderationReason: {
+            type: String,
+            trim: true,
+            maxlength: 500,
             default: null,
         },
 
