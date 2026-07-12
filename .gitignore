@@ -6,7 +6,7 @@ node_modules/
 
 # =========================
 # Environment variables
-# IMPORTANT: Never commit secrets
+# Never commit secrets
 # =========================
 .env
 .env.*
@@ -20,6 +20,7 @@ build/
 out/
 .next/
 .vercel/
+*.tsbuildinfo
 
 # =========================
 # Logs
@@ -32,11 +33,6 @@ yarn-error.log*
 pnpm-debug.log*
 
 # =========================
-# TypeScript
-# =========================
-*.tsbuildinfo
-
-# =========================
 # Runtime / cache
 # =========================
 .cache/
@@ -45,22 +41,7 @@ temp/
 tmp/
 
 # =========================
-# OS files
-# =========================
-.DS_Store
-Thumbs.db
-desktop.ini
-
-# =========================
-# Editor files
-# =========================
-.vscode/*
-!.vscode/extensions.json
-!.vscode/settings.json
-.idea/
-
-# =========================
-# Coverage / testing
+# Testing / coverage
 # =========================
 coverage/
 .nyc_output/
@@ -71,13 +52,28 @@ coverage/
 .pnpm-store/
 
 # =========================
-# Local database / uploads
+# Local uploads and data
 # =========================
 uploads/
-storage/
-data/
+/storage/
+/data/
 *.sqlite
 *.sqlite3
+
+# =========================
+# Editor files
+# =========================
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+
+# =========================
+# Operating system files
+# =========================
+.DS_Store
+Thumbs.db
+desktop.ini
 
 # =========================
 # Docker local overrides
@@ -92,26 +88,8 @@ docker-compose.override.yml
 *.cert
 *.crt
 
-
-# Dependencies
-node_modules/
-
-# Environment files
-.env
-.env.local
-.env.*.local
-!.env.example
-
-# Build outputs
-dist/
-build/
-coverage/
-
-# Logs
-*.log
-
-# Backup / bad history folders
+# =========================
+# Git backup folders
+# =========================
 .git_backup_bad_history/
 .git_backup*/
-uploads/
-uploads/*
