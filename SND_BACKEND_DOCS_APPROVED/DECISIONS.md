@@ -131,3 +131,56 @@ views. Keep pipelines typed and split into readable stages/builders when they gr
 **Decision:** A sprint is not marked complete until code passes typecheck/build and the
 new behavior is tested. Documentation describes verified implementation, not proposed
 code.
+
+## ADR-019 — Current Database State Governs High-Impact Admin Authorization
+
+**Status:** Accepted  
+**Decision:** Route-level `role: admin` token checks are only a baseline gate. High-impact
+admin services revalidate the acting account's current existence, active state, and admin
+role from MongoDB. Mutating transactions perform that revalidation using the same
+`ClientSession` as the protected write.  
+**Reason:** JWT role claims can become stale after role or account-state changes.
+
+## ADR-020 — Audit Writes Share the High-Impact Mutation Transaction
+
+**Status:** Accepted  
+**Decision:** User suspend/reactivate and Post hide/restore writes must persist their typed
+AuditEvent in the same MongoDB transaction and `ClientSession`.  
+**Consequence:** The protected state change and its audit record commit or roll back together.
+Audit writers accept narrow allowlisted state, not arbitrary documents or request payloads.
+
+## ADR-021 — Post Owner Lifecycle and Admin Moderation Are Separate
+
+**Status:** Accepted  
+**Decision:** Owner soft delete continues to use `status` and `deletedAt`. Admin moderation
+uses independent `moderationStatus`, `hiddenAt`, `hiddenBy`, and `moderationReason` fields.  
+**Consequence:** Admin restore never clears owner deletion state and cannot resurrect content
+that its owner deleted. Hide/restore changes visibility only and does not delete Cloudinary
+assets or relationship records.
+
+## ADR-022 — Canonical Public Post Visibility Includes Legacy Compatibility
+
+**Status:** Accepted  
+**Decision:** Public Post availability is centralized in the Post domain and requires an
+active owner lifecycle plus either explicit `moderationStatus: visible` or a physically
+missing moderation field on a legacy document.  
+**Consequence:** Hidden Posts are consistently unavailable through Posts, Comments, Likes,
+Saves, and new Reports. Unknown moderation values fail closed rather than being treated as
+visible.
+
+## ADR-023 — Reports and Post Moderation Remain Separate Workflows
+
+**Status:** Accepted  
+**Decision:** Report status changes do not automatically hide/restore Posts, and Post
+hide/restore does not automatically update Reports.  
+**Reason:** Automatic coupling requires a separately designed orchestration policy and would
+mix review records with content-visibility state prematurely.
+
+## ADR-024 — Admin Dashboard Is a Non-Transactional Operational Snapshot
+
+**Status:** Proposed, pending Sprint 7D manual verification  
+**Decision:** The admin dashboard uses separate typed domain aggregations/counts executed
+concurrently after current-admin revalidation. It does not use a cross-domain transaction.  
+**Reason:** Dashboard figures are operational telemetry, not a financial ledger or a
+cross-document write invariant. Small natural read-time skew is acceptable and avoids an
+expensive, unnecessary transaction boundary.

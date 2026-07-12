@@ -9,10 +9,12 @@ modular backend while preserving deep learning as a first-class goal.
 ## Current Phase
 
 - Sprints 0–6: completed.
-- Current stable milestone: Reports & Moderation Core completed and manually tested.
-- Next planned sprint: Sprint 7 — Admin Operations & Dashboard.
-- Current development track: backend only. Frontend integration is a future, separately
-  scoped phase and must not be introduced implicitly.
+- Sprint 7A — Security Foundation: completed and verified.
+- Sprint 7B — User Administration: completed and verified.
+- Sprint 7C — Post Moderation: completed and verified manually with Postman.
+- Sprint 7D — Admin Dashboard Summary: implemented; typecheck/build pass; manual Postman
+  verification is the remaining completion gate.
+- Current development track: backend only. Frontend integration remains separately scoped.
 
 ## Current Stack
 
@@ -34,14 +36,19 @@ versions and installed dependencies.
 
 - Backend foundation and health checks
 - Authentication and refresh-token rotation
-- Current-user profile management
+- Current-user profile management and active-user revalidation
 - Avatar upload/replacement through Cloudinary
-- Posts with pagination, search/sort, ownership, soft delete, and image management
-- Comments with nested list/create routes and direct owner/admin mutations
+- Posts with pagination, search/sort, ownership, soft delete, image management, and a
+  separate admin moderation lifecycle
+- Comments with parent-post visibility validation and owner mutations
 - Likes using a unique user/post relation and denormalized `likesCount`
 - Saves/favorites using a unique user/post relation and a private saved-post list
-- Reports and moderation workflow with admin-protected review/listing behavior
-- MongoDB aggregation pipelines for read-heavy paginated relationship/report queries
+- Reports with admin-protected review/status workflows
+- Admin user listing/detail and transactional suspend/reactivate operations
+- Admin post listing/detail and transactional hide/restore operations
+- Audit events for high-impact user and post administration actions
+- Admin dashboard operational summary across users, posts, comments, engagement, and reports
+- MongoDB aggregation pipelines for joined/paginated read models and dashboard statistics
 
 ## Core Architectural Rules
 
@@ -53,9 +60,11 @@ route → middleware → validation → controller → service → model/databas
 - Services do not depend on Express `Request` or `Response`.
 - Acting user identity comes from verified authentication context, never client payloads.
 - Ownership and high-impact authorization are enforced in the service layer.
+- High-impact admin actions revalidate the current admin from MongoDB.
 - Client-controlled body, params, and query values are validated before business logic.
 - API data is returned through explicit sanitizers/presenters; internal fields are hidden.
 - Production uploads use Cloudinary, not persistent local disk.
+- Owner deletion and admin post moderation are separate state dimensions.
 
 ## Current Authentication Position
 
@@ -76,10 +85,10 @@ The backend is production-minded but not yet production-ready. Remaining gates i
 - Secure browser refresh-token transport
 - Multi-device session model or explicit acceptance of single-session behavior
 - Magic-byte/file-signature validation before accepting production uploads
-- Audit logging for high-impact admin and moderation actions
-- Monitoring, alerting, and centralized log redaction
+- Production monitoring, alerting, and enforced log redaction
 - Query-plan/index review using real workloads
 - Cursor pagination/caching only where measurements justify them
+- Manual Postman verification of the Sprint 7D dashboard endpoint
 
 ## Working Agreement
 

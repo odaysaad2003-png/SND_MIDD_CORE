@@ -11,8 +11,8 @@
 | 4 | Posts, pagination, and cloud image management | Completed |
 | 5 | Comments, likes, and saves | Completed |
 | 6 | Reports, moderation, and aggregation | Completed |
-| 7 | Admin operations and dashboard | Next |
-| 8 | Automated testing and quality | Planned |
+| 7 | Admin operations and dashboard | In progress — 7D verification pending |
+| 8 | Automated testing and quality | Next after Sprint 7 verification |
 | 9 | Production deployment | Planned |
 | 10 | Performance, scale, and security hardening | Planned |
 
@@ -112,6 +112,8 @@ joined read models, pipeline stage typing, deterministic sorting, and auditabili
 ---
 
 ## Sprint 7 — Admin Operations and Dashboard
+
+**Status:** 7A, 7B, and 7C complete. 7D dashboard code is implemented and passes typecheck/build; manual Postman verification remains before the sprint is marked complete.
 
 **Goal:** Give trusted operators safe platform visibility and control without duplicating
 the completed reports core.
