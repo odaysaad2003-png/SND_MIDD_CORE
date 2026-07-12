@@ -2,6 +2,7 @@ import {Types} from "mongoose";
 import {SaveModel} from "./save.model";
 import {PostModel, PostStatus} from "../posts/post.model";
 import {AppError} from "../../utils/app-error";
+import {buildJoinedPublicPostVisibilityMatch, buildPublicPostVisibilityFilter} from "../posts/post-visibility";
 export interface SaveStatusResult {
     savedByMe: boolean;
 }
@@ -42,11 +43,9 @@ function buildSortDirection(sort: "latest" | "oldest"): 1 | -1 {
 }
 
 async function findActivePostOrThrow(postId: string) {
-    const post = await PostModel.findOne({
-        _id: postId,
-        status: "active",
-        deletedAt: null,
-    }).select("_id");
+    const post = await PostModel.findOne(
+        buildPublicPostVisibilityFilter([{_id: postId}])
+    ).select("_id");
 
     if (!post) {
         throw AppError.notFound("Post not found");
@@ -207,10 +206,7 @@ export async function listMySavedPosts(
             $unwind: "$post",
         },
         {
-            $match: {
-                "post.status": "active",
-                "post.deletedAt": null,
-            },
+            $match: buildJoinedPublicPostVisibilityMatch("post"),
         },
         {
             $sort: {
