@@ -3,6 +3,7 @@ import {CommentModel, IComment, CommentStatus} from "./comment.model";
 import {PostModel} from "../posts/post.model";
 import {AppError} from "../../utils/app-error";
 import {AUTHOR_PUBLIC_FIELDS} from "../../constants/post.constants";
+import {buildPublicPostVisibilityFilter} from "../posts/post-visibility";
 
 export interface SanitizedCommentAuthor {
     id: string;
@@ -31,11 +32,9 @@ function buildSort(sort: "latest" | "oldest") {
 }
 
 async function assertActivePostExists(postId: string): Promise<void> {
-    const post = await PostModel.findOne({
-        _id: postId,
-        status: "active",
-        deletedAt: null,
-    }).select("_id");
+    const post = await PostModel.findOne(
+        buildPublicPostVisibilityFilter([{_id: postId}])
+    ).select("_id");
 
     if (!post) {
         throw AppError.notFound("Post not found");
@@ -70,8 +69,8 @@ function sanitizeComment(comment: IComment): SanitizedComment {
 /**
  * Phase 7A: owner-only. Admin override was intentionally removed for the
  * same reason as posts — silently rewriting/deleting another user's comment
- * through the owner route leaves no moderation trail. Admin hide/restore is
- * planned as a dedicated, auditable Phase 7C action instead.
+ * through the owner route leaves no moderation trail. Comment moderation is
+ * outside Sprint 7C; this route remains owner-only.
  */
 async function findOwnedActiveCommentOrThrow(commentId: string, userId: string): Promise<IComment> {
     const comment = await CommentModel.findOne({
