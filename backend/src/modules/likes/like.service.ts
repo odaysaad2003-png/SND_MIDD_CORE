@@ -1,6 +1,7 @@
 import {LikeModel} from "./like.model";
 import {PostModel} from "../posts/post.model";
 import {AppError} from "../../utils/app-error";
+import {buildPublicPostVisibilityFilter} from "../posts/post-visibility";
 
 export interface LikeStatusResult {
     likedByMe: boolean;
@@ -8,11 +9,9 @@ export interface LikeStatusResult {
 }
 
 async function findActivePostOrThrow(postId: string) {
-    const post = await PostModel.findOne({
-        _id: postId,
-        status: "active",
-        deletedAt: null,
-    }).select("_id likesCount");
+    const post = await PostModel.findOne(
+        buildPublicPostVisibilityFilter([{_id: postId}])
+    ).select("_id likesCount");
 
     if (!post) {
         throw AppError.notFound("Post not found");
