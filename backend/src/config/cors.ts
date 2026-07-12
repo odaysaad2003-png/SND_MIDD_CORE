@@ -17,6 +17,7 @@ export const corsOptions: CorsOptions = {
     callback(AppError.forbidden("Origin is not allowed by CORS"));
   },
   credentials: true,
+  allowedHeaders: ["Content-Type", "Authorization", "X-CSRF-Token", REQUEST_ID_HEADER],
   exposedHeaders: [REQUEST_ID_HEADER],
   maxAge: env.CORS_MAX_AGE_SECONDS,
   optionsSuccessStatus: 204,
