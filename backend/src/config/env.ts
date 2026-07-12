@@ -10,6 +10,7 @@ import { z } from "zod";
 const envSchema = z.object({
     NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
     PORT: z.coerce.number().int().positive().default(4000),
+    TRUST_PROXY_HOPS: z.coerce.number().int().min(0).max(5).default(0),
     MONGODB_URI: z.string().min(1, "MONGODB_URI is required"),
     JWT_SECRET: z.string().min(32, "JWT_SECRET is required"),
     JWT_EXPIRES_IN: z.string().min(1, "JWT_EXPIRES_IN is required"),

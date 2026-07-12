@@ -1,5 +1,5 @@
+import { randomUUID } from "crypto";
 import { NextFunction, Request, Response } from "express";
-import { v4 as uuidv4 } from "uuid";
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -10,17 +10,15 @@ declare global {
   }
 }
 
-const REQUEST_ID_HEADER = "X-Request-Id";
+export const REQUEST_ID_HEADER = "X-Request-Id";
 
 /**
- * Assigns a unique id to every incoming request so a single request can be
- * traced across middleware/controller/service logs (and in the response,
- * for client-side bug reports). Reuses an inbound id if a trusted upstream
- * (e.g. load balancer) already set one.
+ * Generates a server-controlled correlation id for every request.
+ * Client-supplied ids are intentionally not trusted because they can be
+ * duplicated or crafted to confuse logs and incident investigation.
  */
 export function requestId(req: Request, res: Response, next: NextFunction): void {
-  const incoming = req.header(REQUEST_ID_HEADER);
-  req.requestId = incoming && incoming.length > 0 ? incoming : uuidv4();
+  req.requestId = randomUUID();
   res.setHeader(REQUEST_ID_HEADER, req.requestId);
   next();
 }

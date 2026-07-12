@@ -4,6 +4,8 @@ export const ErrorCodes = {
   UNAUTHORIZED: "UNAUTHORIZED",
   FORBIDDEN: "FORBIDDEN",
   CONFLICT: "CONFLICT",
+  PAYLOAD_TOO_LARGE: "PAYLOAD_TOO_LARGE",
+  UNSUPPORTED_MEDIA_TYPE: "UNSUPPORTED_MEDIA_TYPE",
   TOO_MANY_REQUESTS: "TOO_MANY_REQUESTS",
   INTERNAL_ERROR: "INTERNAL_ERROR",
   BAD_REQUEST: "BAD_REQUEST",
@@ -11,17 +13,15 @@ export const ErrorCodes = {
 
 export type ErrorCode = (typeof ErrorCodes)[keyof typeof ErrorCodes];
 
-/**
- * Default HTTP status per error code, used when a status isn't explicitly
- * passed to AppError. Keeps status/code pairing consistent across the app.
- */
 export const ErrorCodeStatusMap: Record<ErrorCode, number> = {
-    VALIDATION_ERROR: 400,
-    UNAUTHORIZED: 401,
-    FORBIDDEN: 403,
-    NOT_FOUND: 404,
-    CONFLICT: 409,
-    TOO_MANY_REQUESTS: 429,
-    INTERNAL_ERROR: 500,
-    BAD_REQUEST: 400,
+  VALIDATION_ERROR: 400,
+  BAD_REQUEST: 400,
+  UNAUTHORIZED: 401,
+  FORBIDDEN: 403,
+  NOT_FOUND: 404,
+  CONFLICT: 409,
+  PAYLOAD_TOO_LARGE: 413,
+  UNSUPPORTED_MEDIA_TYPE: 415,
+  TOO_MANY_REQUESTS: 429,
+  INTERNAL_ERROR: 500,
 };

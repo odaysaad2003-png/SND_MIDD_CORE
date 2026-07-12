@@ -44,6 +44,14 @@ export class AppError extends Error {
     return new AppError("CONFLICT", message);
   }
 
+  static payloadTooLarge(message = "Payload too large") {
+    return new AppError("PAYLOAD_TOO_LARGE", message);
+  }
+
+  static unsupportedMediaType(message = "Unsupported media type") {
+    return new AppError("UNSUPPORTED_MEDIA_TYPE", message);
+  }
+
   static tooManyRequests(message = "Too many requests") {
     return new AppError("TOO_MANY_REQUESTS", message);
   }

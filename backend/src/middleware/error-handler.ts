@@ -1,19 +1,65 @@
 import { NextFunction, Request, Response } from "express";
-import { AppError } from "../utils/app-error";
-import { ErrorCodes } from "../constants/error-codes";
-import { logger } from "../utils/logger";
 import { isProduction } from "../config/env";
+import { ErrorCodes } from "../constants/error-codes";
+import { AppError } from "../utils/app-error";
+import { logger } from "../utils/logger";
 
-/**
- * Single place responsible for turning any thrown/forwarded error into the
- * standard error response shape from API_CONVENTIONS.md:
- * { success: false, error: { code, message, details } }
- *
- * - AppError (operational, expected) -> its own status/code/message are used.
- * - Anything else (a real bug) -> logged with full detail server-side,
- *   but the client only ever gets a generic 500 message in production.
- *   Must be registered LAST, after all routes.
- */
+interface ParserErrorShape {
+  type?: unknown;
+  status?: unknown;
+}
+
+function getParserErrorType(err: unknown): string | undefined {
+  if (typeof err !== "object" || err === null) {
+    return undefined;
+  }
+
+  const type = (err as ParserErrorShape).type;
+  return typeof type === "string" ? type : undefined;
+}
+
+function mapParserError(err: unknown): AppError | undefined {
+  const errorType = getParserErrorType(err);
+
+  if (errorType === "entity.parse.failed" || errorType === "entity.verify.failed") {
+    return AppError.badRequest("Malformed request body");
+  }
+
+  if (errorType === "entity.too.large" || errorType === "parameters.too.many") {
+    return AppError.payloadTooLarge("Request body is too large");
+  }
+
+  if (errorType === "encoding.unsupported" || errorType === "charset.unsupported") {
+    return AppError.unsupportedMediaType("Request body encoding is not supported");
+  }
+
+  if (errorType === "request.aborted") {
+    return AppError.badRequest("Request body was aborted before completion");
+  }
+
+  return undefined;
+}
+
+function sendOperationalError(req: Request, res: Response, err: AppError): void {
+  logger.warn("Operational error", {
+    requestId: req.requestId,
+    method: req.method,
+    path: req.path,
+    statusCode: err.statusCode,
+    code: err.code,
+    message: err.message,
+  });
+
+  res.status(err.statusCode).json({
+    success: false,
+    error: {
+      code: err.code,
+      message: err.message,
+      details: err.details ?? [],
+    },
+  });
+}
+
 export function errorHandler(
   err: unknown,
   req: Request,
@@ -21,34 +67,27 @@ export function errorHandler(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _next: NextFunction
 ): void {
-  if (err instanceof AppError) {
-    logger.warn("Operational error", {
-      requestId: req.requestId,
-      code: err.code,
-      message: err.message,
-      path: req.originalUrl,
-    });
+  const parserError = mapParserError(err);
 
-    res.status(err.statusCode).json({
-      success: false,
-      error: {
-        code: err.code,
-        message: err.message,
-        details: err.details ?? [],
-      },
-    });
+  if (parserError) {
+    sendOperationalError(req, res, parserError);
     return;
   }
 
-  // Unexpected error: never leak stack traces or internal messages.
+  if (err instanceof AppError) {
+    sendOperationalError(req, res, err);
+    return;
+  }
+
   const message = err instanceof Error ? err.message : "Unknown error";
   const stack = err instanceof Error ? err.stack : undefined;
 
   logger.error("Unhandled error", {
     requestId: req.requestId,
+    method: req.method,
+    path: req.path,
     message,
     stack,
-    path: req.originalUrl,
   });
 
   res.status(500).json({
@@ -61,10 +100,6 @@ export function errorHandler(
   });
 }
 
-/**
- * Catches requests that matched no route. Registered after all routes,
- * before the global error handler.
- */
 export function notFoundHandler(req: Request, _res: Response, next: NextFunction): void {
-  next(AppError.notFound(`Route not found: ${req.method} ${req.originalUrl}`));
+  next(AppError.notFound(`Route not found: ${req.method} ${req.path}`));
 }
