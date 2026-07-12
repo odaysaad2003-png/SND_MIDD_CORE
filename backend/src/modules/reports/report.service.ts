@@ -157,6 +157,17 @@ function buildReportAggregationPipeline(options: {
             $match: options.match,
         },
         {
+            $lookup: {
+                from: "users",
+                localField: "reporter",
+                foreignField: "_id",
+                as: "reporter",
+            },
+        },
+        {
+            $unwind: "$reporter",
+        },
+        {
             $sort: sortStage,
         },
         {
@@ -167,17 +178,6 @@ function buildReportAggregationPipeline(options: {
                     },
                     {
                         $limit: options.limit,
-                    },
-                    {
-                        $lookup: {
-                            from: "users",
-                            localField: "reporter",
-                            foreignField: "_id",
-                            as: "reporter",
-                        },
-                    },
-                    {
-                        $unwind: "$reporter",
                     },
                     {
                         $lookup: {

@@ -209,6 +209,17 @@ export async function listMySavedPosts(
             $match: buildJoinedPublicPostVisibilityMatch("post"),
         },
         {
+            $lookup: {
+                from: "users",
+                localField: "post.author",
+                foreignField: "_id",
+                as: "author",
+            },
+        },
+        {
+            $unwind: "$author",
+        },
+        {
             $sort: {
                 updatedAt: sortDirection,
                 _id: sortDirection,
@@ -222,17 +233,6 @@ export async function listMySavedPosts(
                     },
                     {
                         $limit: limit,
-                    },
-                    {
-                        $lookup: {
-                            from: "users",
-                            localField: "post.author",
-                            foreignField: "_id",
-                            as: "author",
-                        },
-                    },
-                    {
-                        $unwind: "$author",
                     },
                     {
                         $project: {

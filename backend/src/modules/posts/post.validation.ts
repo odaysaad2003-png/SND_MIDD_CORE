@@ -28,7 +28,7 @@ export const updatePostSchema = z.object({
 
     body: z
     .object({
-        title: z.string().trim().min(3).max(120).optional(),
+        title: z.string().trim().min(3).max(100).optional(),
         content: z.string().trim().min(1).max(5000).optional(),
     })
     .strict()

@@ -28,7 +28,9 @@ interface PaginationMeta {
 }
 
 function buildSort(sort: "latest" | "oldest") {
-    return sort === "oldest" ? {createdAt: 1 as const} : {createdAt: -1 as const};
+    return sort === "oldest"
+        ? {createdAt: 1 as const, _id: 1 as const}
+        : {createdAt: -1 as const, _id: -1 as const};
 }
 
 async function assertActivePostExists(postId: string): Promise<void> {

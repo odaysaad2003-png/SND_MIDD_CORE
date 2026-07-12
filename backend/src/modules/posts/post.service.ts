@@ -56,23 +56,26 @@ function sanitizePost(post: IPost): SanitizedPost {
     };
 }
 
-function buildSort(sort: "latest" | "oldest") {
-    return sort === "oldest" ? {createdAt: 1 as const} : {createdAt: -1 as const};
+function buildSort(sort: "latest" | "oldest"): Record<string, SortOrder> {
+    return sort === "oldest"
+        ? {createdAt: 1, _id: 1}
+        : {createdAt: -1, _id: -1};
 }
+
 function buildMyPostsSort(sort: GetMyPostsQuery["sort"]): Record<string, SortOrder> {
     switch (sort) {
         case "createdAt":
-            return {createdAt: 1};
+            return {createdAt: 1, _id: 1};
 
         case "updatedAt":
-            return {updatedAt: 1};
+            return {updatedAt: 1, _id: 1};
 
         case "-updatedAt":
-            return {updatedAt: -1};
+            return {updatedAt: -1, _id: -1};
 
         case "-createdAt":
         default:
-            return {createdAt: -1};
+            return {createdAt: -1, _id: -1};
     }
 }
 

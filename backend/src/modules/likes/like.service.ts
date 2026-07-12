@@ -1,3 +1,4 @@
+import mongoose, {ClientSession} from "mongoose";
 import {LikeModel} from "./like.model";
 import {PostModel} from "../posts/post.model";
 import {AppError} from "../../utils/app-error";
@@ -8,10 +9,21 @@ export interface LikeStatusResult {
     likesCount: number;
 }
 
-async function findActivePostOrThrow(postId: string) {
-    const post = await PostModel.findOne(
+interface LikeMutationResult {
+    result: LikeStatusResult;
+    created: boolean;
+}
+
+async function findActivePostOrThrow(postId: string, session?: ClientSession) {
+    const query = PostModel.findOne(
         buildPublicPostVisibilityFilter([{_id: postId}])
     ).select("_id likesCount");
+
+    if (session) {
+        query.session(session);
+    }
+
+    const post = await query;
 
     if (!post) {
         throw AppError.notFound("Post not found");
@@ -20,161 +32,161 @@ async function findActivePostOrThrow(postId: string) {
     return post;
 }
 
-async function readCurrentLikesCount(postId: string): Promise<number> {
-    const post = await PostModel.findById(postId).select("likesCount");
-
-    return post?.likesCount ?? 0;
-}
-
-async function incrementLikesCount(postId: string): Promise<number> {
-    const post = await PostModel.findByIdAndUpdate(postId, {$inc: {likesCount: 1}}, {new: true}).select("likesCount");
-
-    return post?.likesCount ?? 0;
-}
-
-async function decrementLikesCount(postId: string): Promise<number> {
+async function incrementLikesCount(postId: string, session: ClientSession): Promise<number> {
     const post = await PostModel.findOneAndUpdate(
+        buildPublicPostVisibilityFilter([{_id: postId}]),
         {
-            _id: postId,
-            likesCount: {$gt: 0},
-        },
-        {
-            $inc: {likesCount: -1},
+            $inc: {
+                likesCount: 1,
+            },
         },
         {
             new: true,
+            session,
         }
     ).select("likesCount");
 
     if (!post) {
-        return readCurrentLikesCount(postId);
+        throw AppError.notFound("Post not found");
     }
 
     return post.likesCount ?? 0;
 }
 
-export async function likePost(postId: string, userId: string): Promise<{result: LikeStatusResult; created: boolean}> {
-    await findActivePostOrThrow(postId);
-
-    const activeLike = await LikeModel.findOne({
-        post: postId,
-        user: userId,
-        status: "active",
-    }).select("_id");
-
-    if (activeLike) {
-        const likesCount = await readCurrentLikesCount(postId);
-
-        return {
-            result: {
-                likedByMe: true,
-                likesCount,
-            },
-            created: false,
-        };
-    }
-
-    const restoredLike = await LikeModel.findOneAndUpdate(
+async function decrementLikesCount(postId: string, session: ClientSession): Promise<number> {
+    const post = await PostModel.findOneAndUpdate(
+        buildPublicPostVisibilityFilter([
+            {_id: postId},
+            {likesCount: {$gt: 0}},
+        ]),
         {
-            post: postId,
-            user: userId,
-            status: "deleted",
-        },
-        {
-            $set: {
-                status: "active",
-                deletedAt: null,
+            $inc: {
+                likesCount: -1,
             },
         },
         {
             new: true,
+            session,
         }
-    ).select("_id");
+    ).select("likesCount");
 
-    if (restoredLike) {
-        const likesCount = await incrementLikesCount(postId);
-
-        return {
-            result: {
-                likedByMe: true,
-                likesCount,
-            },
-            created: false,
-        };
+    if (post) {
+        return post.likesCount ?? 0;
     }
+
+    // A legacy counter may already be zero even though an active Like
+    // relation existed. The relationship transition is still valid; keep
+    // the counter at zero and let the reconciliation command repair any
+    // wider historical drift without ever allowing a negative value.
+    const activePost = await findActivePostOrThrow(postId, session);
+    return activePost.likesCount ?? 0;
+}
+
+export async function likePost(postId: string, userId: string): Promise<LikeMutationResult> {
+    const session = await mongoose.startSession();
+    let result: LikeMutationResult | undefined;
 
     try {
-        await LikeModel.create({
-            post: postId,
-            user: userId,
-            status: "active",
-            deletedAt: null,
+        await session.withTransaction(async () => {
+            const post = await findActivePostOrThrow(postId, session);
+
+            /**
+             * One indexed upsert owns the complete relationship transition:
+             * - null pre-image means a new Like document was inserted
+             * - deleted pre-image means it was restored
+             * - active pre-image means this request is an idempotent no-op
+             *
+             * Returning the pre-image is what lets us update likesCount only
+             * when the relationship actually became active.
+             */
+            const previousLike = await LikeModel.findOneAndUpdate(
+                {
+                    post: postId,
+                    user: userId,
+                },
+                {
+                    $set: {
+                        status: "active",
+                        deletedAt: null,
+                    },
+                },
+                {
+                    upsert: true,
+                    new: false,
+                    setDefaultsOnInsert: true,
+                    session,
+                }
+            );
+
+            const created = previousLike === null;
+            const becameActive = created || previousLike.status !== "active";
+            const likesCount = becameActive
+                ? await incrementLikesCount(postId, session)
+                : post.likesCount ?? 0;
+
+            result = {
+                result: {
+                    likedByMe: true,
+                    likesCount,
+                },
+                created,
+            };
         });
-
-        const likesCount = await incrementLikesCount(postId);
-
-        return {
-            result: {
-                likedByMe: true,
-                likesCount,
-            },
-            created: true,
-        };
-    } catch (error) {
-        const isDuplicateKeyError =
-            typeof error === "object" && error !== null && (error as {code?: number}).code === 11000;
-
-        if (!isDuplicateKeyError) {
-            throw error;
-        }
-
-        const likesCount = await readCurrentLikesCount(postId);
-
-        return {
-            result: {
-                likedByMe: true,
-                likesCount,
-            },
-            created: false,
-        };
+    } finally {
+        await session.endSession();
     }
+
+    if (!result) {
+        throw AppError.internal("Like operation did not complete");
+    }
+
+    return result;
 }
 
 export async function unlikePost(postId: string, userId: string): Promise<LikeStatusResult> {
-    await findActivePostOrThrow(postId);
+    const session = await mongoose.startSession();
+    let result: LikeStatusResult | undefined;
 
-    const deletedLike = await LikeModel.findOneAndUpdate(
-        {
-            post: postId,
-            user: userId,
-            status: "active",
-        },
-        {
-            $set: {
-                status: "deleted",
-                deletedAt: new Date(),
-            },
-        },
-        {
-            new: true,
-        }
-    ).select("_id");
+    try {
+        await session.withTransaction(async () => {
+            const post = await findActivePostOrThrow(postId, session);
 
-    if (!deletedLike) {
-        const likesCount = await readCurrentLikesCount(postId);
+            const previousLike = await LikeModel.findOneAndUpdate(
+                {
+                    post: postId,
+                    user: userId,
+                    status: "active",
+                },
+                {
+                    $set: {
+                        status: "deleted",
+                        deletedAt: new Date(),
+                    },
+                },
+                {
+                    new: false,
+                    session,
+                }
+            );
 
-        return {
-            likedByMe: false,
-            likesCount,
-        };
+            const likesCount = previousLike
+                ? await decrementLikesCount(postId, session)
+                : post.likesCount ?? 0;
+
+            result = {
+                likedByMe: false,
+                likesCount,
+            };
+        });
+    } finally {
+        await session.endSession();
     }
 
-    const likesCount = await decrementLikesCount(postId);
+    if (!result) {
+        throw AppError.internal("Unlike operation did not complete");
+    }
 
-    return {
-        likedByMe: false,
-        likesCount,
-    };
+    return result;
 }
 
 export async function getMyLikeStatus(postId: string, userId: string): Promise<LikeStatusResult> {
