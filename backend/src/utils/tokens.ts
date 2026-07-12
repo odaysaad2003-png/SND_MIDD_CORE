@@ -9,11 +9,13 @@ export interface AccessTokenPayload {
 export interface RefreshTokenPayload {
     sub: string;
     sid: string;
+    csrf: string;
 }
 
 export interface VerifiedRefreshTokenPayload {
     sub: string;
     sid?: string;
+    csrf?: string;
 }
 
 export function signAccessToken(payload: AccessTokenPayload): string {
@@ -37,4 +39,14 @@ export function verifyRefreshToken(
     options?: {ignoreExpiration?: boolean}
 ): VerifiedRefreshTokenPayload {
     return jwt.verify(token, env.REFRESH_TOKEN_SECRET, options) as VerifiedRefreshTokenPayload;
+}
+
+export function getRefreshTokenRemainingLifetimeMs(token: string): number {
+    const decoded = jwt.decode(token);
+
+    if (typeof decoded !== "object" || decoded === null || typeof decoded.exp !== "number") {
+        throw new Error("Refresh token is missing an expiration claim");
+    }
+
+    return Math.max(0, decoded.exp * 1_000 - Date.now());
 }

@@ -57,3 +57,16 @@ export const uploadRateLimiter = rateLimit({
     keyGenerator: authenticatedActorKey,
     handler: rateLimitHandler,
 });
+
+/**
+ * Limits cookie-session operations such as CSRF bootstrap, refresh rotation,
+ * and logout. These routes are intentionally keyed by client IP because they
+ * run before access-token authentication.
+ */
+export const authSessionRateLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    limit: 60,
+    standardHeaders: true,
+    legacyHeaders: false,
+    handler: rateLimitHandler,
+});

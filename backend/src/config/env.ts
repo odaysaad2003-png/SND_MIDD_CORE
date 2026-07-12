@@ -3,6 +3,10 @@ import { z } from "zod";
 
 const booleanStringSchema = z.enum(["true", "false"]);
 
+function emptyStringToUndefined(value: unknown): unknown {
+  return typeof value === "string" && value.trim() === "" ? undefined : value;
+}
+
 function splitCorsOrigins(value: string): string[] {
   return value
     .split(",")
@@ -65,6 +69,17 @@ const envSchema = z
       .min(32, "REFRESH_TOKEN_SECRET must be at least 32 characters"),
     REFRESH_TOKEN_EXPIRES_IN: z.string().min(1, "REFRESH_TOKEN_EXPIRES_IN is required"),
 
+    AUTH_REFRESH_COOKIE_NAME: z
+      .string()
+      .regex(/^[A-Za-z0-9_-]{1,64}$/, "AUTH_REFRESH_COOKIE_NAME contains invalid characters")
+      .default("snd_refresh"),
+    AUTH_COOKIE_SECURE: booleanStringSchema.optional(),
+    AUTH_COOKIE_SAME_SITE: z.enum(["strict", "lax", "none"]).default("lax"),
+    AUTH_COOKIE_DOMAIN: z.preprocess(
+      emptyStringToUndefined,
+      z.string().trim().min(1).max(253).optional()
+    ),
+
     CORS_ORIGIN: z.string().min(1, "CORS_ORIGIN is required"),
     CORS_MAX_AGE_SECONDS: z.coerce.number().int().min(0).max(86_400).default(600),
 
@@ -86,6 +101,40 @@ const envSchema = z
         code: z.ZodIssueCode.custom,
         path: ["REFRESH_TOKEN_SECRET"],
         message: "Access-token and refresh-token secrets must be different",
+      });
+    }
+
+    const cookieSecure =
+      values.AUTH_COOKIE_SECURE === undefined
+        ? values.NODE_ENV === "production"
+        : values.AUTH_COOKIE_SECURE === "true";
+
+    if (values.NODE_ENV === "production" && !cookieSecure) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["AUTH_COOKIE_SECURE"],
+        message: "AUTH_COOKIE_SECURE must be true in production",
+      });
+    }
+
+    if (values.AUTH_COOKIE_SAME_SITE === "none" && !cookieSecure) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["AUTH_COOKIE_SAME_SITE"],
+        message: "SameSite=None requires secure cookies",
+      });
+    }
+
+    if (
+      values.AUTH_COOKIE_DOMAIN &&
+      (values.AUTH_COOKIE_DOMAIN.includes("://") ||
+        values.AUTH_COOKIE_DOMAIN.includes("/") ||
+        values.AUTH_COOKIE_DOMAIN.includes(":"))
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["AUTH_COOKIE_DOMAIN"],
+        message: "AUTH_COOKIE_DOMAIN must be a hostname without protocol, path, or port",
       });
     }
 
@@ -125,9 +174,15 @@ function loadEnv() {
   }
 
   const autoIndexFromEnv = parsed.data.MONGOOSE_AUTO_INDEX;
+  const cookieSecureFromEnv = parsed.data.AUTH_COOKIE_SECURE;
 
   return {
     ...parsed.data,
+    AUTH_COOKIE_SECURE:
+      cookieSecureFromEnv === undefined
+        ? parsed.data.NODE_ENV === "production"
+        : cookieSecureFromEnv === "true",
+    AUTH_COOKIE_DOMAIN: parsed.data.AUTH_COOKIE_DOMAIN || undefined,
     CORS_ORIGINS: normalizeCorsOrigins(splitCorsOrigins(parsed.data.CORS_ORIGIN)),
     MONGOOSE_AUTO_INDEX:
       autoIndexFromEnv === undefined
