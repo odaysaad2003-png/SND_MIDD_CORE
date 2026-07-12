@@ -5,6 +5,7 @@ import {CommentModel} from "../comments/comment.model";
 import {AppError} from "../../utils/app-error";
 import {IReport, ReportModel} from "./report.model";
 import {assertCurrentAdmin} from "../../shared/authorization/admin.service";
+import {buildPublicPostVisibilityFilter} from "../posts/post-visibility";
 
 interface PaginationMeta {
     page: number;
@@ -73,11 +74,9 @@ function normalizeOptionalText(value?: string): string | undefined {
 }
 
 async function assertReportablePost(postId: string, reporterId: string): Promise<void> {
-    const post = await PostModel.findOne({
-        _id: postId,
-        status: "active",
-        deletedAt: null,
-    }).select("_id author");
+    const post = await PostModel.findOne(
+        buildPublicPostVisibilityFilter([{_id: postId}])
+    ).select("_id author");
 
     if (!post) {
         throw AppError.notFound("Post not found");
@@ -103,11 +102,9 @@ async function assertReportableComment(commentId: string, reporterId: string): P
         throw AppError.forbidden("You cannot report your own comment");
     }
 
-    const parentPost = await PostModel.findOne({
-        _id: comment.post,
-        status: "active",
-        deletedAt: null,
-    }).select("_id");
+    const parentPost = await PostModel.findOne(
+        buildPublicPostVisibilityFilter([{_id: comment.post}])
+    ).select("_id");
 
     if (!parentPost) {
         throw AppError.notFound("Post not found");
