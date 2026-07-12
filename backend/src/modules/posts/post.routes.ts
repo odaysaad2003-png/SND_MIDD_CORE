@@ -1,6 +1,7 @@
 import {Router} from "express";
 import {authenticate} from "../../middleware/authenticate";
 import {requireActiveUser} from "../../middleware/require-active-user";
+import {uploadRateLimiter} from "../../middleware/rate-limiter";
 import {validateRequest} from "../../middleware/validate-request";
 import {
     createPostSchema,
@@ -59,6 +60,7 @@ router.post(
     authenticate,
     requireActiveUser,
     validateRequest(postIdParamsSchema),
+    uploadRateLimiter,
     uploadPostImagesMiddleware,
     uploadPostImages
 );

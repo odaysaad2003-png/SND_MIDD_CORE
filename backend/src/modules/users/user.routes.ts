@@ -1,6 +1,7 @@
 import {Router} from "express";
 import {authenticate} from "../../middleware/authenticate";
 import {requireActiveUser} from "../../middleware/require-active-user";
+import {uploadRateLimiter} from "../../middleware/rate-limiter";
 import {validateRequest} from "../../middleware/validate-request";
 import {uploadAvatar} from "./upload.middleware";
 import {updateProfileSchema} from "./user.validation";
@@ -18,6 +19,6 @@ router.get("/me", getMe);
 
 router.patch("/me", validateRequest(updateProfileSchema), updateMe);
 
-router.patch("/me/avatar", uploadAvatar, updateMyAvatar);
+router.patch("/me/avatar", uploadRateLimiter, uploadAvatar, updateMyAvatar);
 
 export default router;

@@ -52,6 +52,10 @@ export class AppError extends Error {
     return new AppError("UNSUPPORTED_MEDIA_TYPE", message);
   }
 
+  static serviceUnavailable(message = "Service unavailable") {
+    return new AppError("SERVICE_UNAVAILABLE", message);
+  }
+
   static tooManyRequests(message = "Too many requests") {
     return new AppError("TOO_MANY_REQUESTS", message);
   }

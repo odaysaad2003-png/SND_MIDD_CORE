@@ -36,3 +36,24 @@ export const authRateLimiter = rateLimit({
     legacyHeaders: false,
     handler: rateLimitHandler,
 });
+
+const authenticatedActorKey = (req: Request): string => {
+    if (req.user?.id) {
+        return `user:${req.user.id}`;
+    }
+
+    return "unauthenticated-upload";
+};
+
+/**
+ * Limits storage-expensive authenticated upload requests. Mount only after
+ * authenticate so normal users are keyed by account rather than shared NAT IP.
+ */
+export const uploadRateLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    limit: 20,
+    standardHeaders: true,
+    legacyHeaders: false,
+    keyGenerator: authenticatedActorKey,
+    handler: rateLimitHandler,
+});

@@ -1,9 +1,26 @@
 import { Request, Response } from "express";
-import { asyncHandler } from "../../utils/async-handler";
 import { sendSuccess } from "../../utils/api-response";
-import { getHealthStatus } from "./health.service";
+import { AppError } from "../../utils/app-error";
+import { asyncHandler } from "../../utils/async-handler";
+import { getHealthStatus, getReadinessStatus } from "./health.service";
+
+function disableHealthCaching(res: Response): void {
+  res.setHeader("Cache-Control", "no-store");
+}
 
 export const getHealth = asyncHandler(async (_req: Request, res: Response) => {
-  const health = getHealthStatus();
-  sendSuccess(res, { data: health });
+  disableHealthCaching(res);
+  sendSuccess(res, { data: getHealthStatus() });
+});
+
+export const getReadiness = asyncHandler(async (_req: Request, res: Response) => {
+  disableHealthCaching(res);
+
+  const readiness = getReadinessStatus();
+
+  if (!readiness) {
+    throw AppError.serviceUnavailable("Service is not ready");
+  }
+
+  sendSuccess(res, { data: readiness });
 });

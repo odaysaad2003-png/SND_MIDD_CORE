@@ -7,9 +7,12 @@ export interface HealthStatus {
   timestamp: string;
 }
 
-/**
- * Framework-agnostic: no req/res here. Just answers "is the system healthy?"
- */
+export interface ReadinessStatus {
+  status: "ready";
+  database: "connected";
+  timestamp: string;
+}
+
 export function getHealthStatus(): HealthStatus {
   const dbConnected = isDBConnected();
 
@@ -17,6 +20,18 @@ export function getHealthStatus(): HealthStatus {
     status: dbConnected ? "ok" : "degraded",
     uptimeSeconds: Math.round(process.uptime()),
     database: dbConnected ? "connected" : "disconnected",
+    timestamp: new Date().toISOString(),
+  };
+}
+
+export function getReadinessStatus(): ReadinessStatus | null {
+  if (!isDBConnected()) {
+    return null;
+  }
+
+  return {
+    status: "ready",
+    database: "connected",
     timestamp: new Date().toISOString(),
   };
 }

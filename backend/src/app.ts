@@ -42,6 +42,9 @@ export function createApp(): Express {
     })
   );
 
+  // Operational probes must remain reachable even when the API limiter is saturated.
+  app.use("/api/v1/health", healthRoutes);
+
   app.use("/api", generalRateLimiter);
 
   app.use(express.json({ limit: JSON_BODY_LIMIT, strict: true }));
@@ -57,7 +60,6 @@ export function createApp(): Express {
     app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
   }
 
-  app.use("/api/v1/health", healthRoutes);
   app.use("/api/v1/auth", authRoutes);
   app.use("/api/v1/users", usersRoutes);
   app.use("/api/v1/posts", postRoutes);
