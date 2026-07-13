@@ -173,12 +173,12 @@ The learner demonstrated the ability to:
 - assign server, form, URL, auth, theme, and local UI state to the correct owner;
 - place routing, feature, shared UI, layout, provider, and infrastructure responsibilities in the approved folder architecture;
 - distinguish API client, feature API functions, Query keys, cache freshness, garbage collection, invalidation, direct cache updates, and initial/background loading;
-- explain access-token memory, HttpOnly refresh cookies, CSRF, CORS, browser bootstrap, single-flight refresh, `401` vs `403`, and logout cleanup.
+- explain access-token memory, HttpOnly refresh cookies, CSRF, CORS, browser bootstrap, single-flight refresh, `401` versus `403`, and logout cleanup.
 
 Corrections retained for practice:
 
 - Login and fresh-page bootstrap are different flows.
-- The browser stores/clears an HttpOnly cookie in response to backend `Set-Cookie`; frontend JavaScript never reads its value.
+- Frontend JavaScript never reads the HttpOnly refresh-token value.
 - CSRF primarily protects browser requests that automatically carry cookies; it is not a Postman access-control mechanism.
 - Invalidation is not the only mutation strategy; exact server results may update narrow caches directly.
 - `isFetching` may be true during background refresh while usable cached data remains visible.
@@ -187,9 +187,26 @@ Corrections retained for practice:
 
 The learner reviewed why ten feed posts can create `1 + 2N = 21` requests under the current Like/Save status contract. The accepted V1 trade-off is lazy status resolution for authenticated visible cards, no guest status calls, correct unknown/loading behavior, Query-cache reuse, and F6 measurement. Public Profile is deferred rather than supported by an invented frontend contract. A protected batch endpoint remains the preferred future optimization.
 
+### F1 Foundation Batch 1 — Completed on 2026-07-13
+
+The learner created and ran the Arabic RTL Next.js foundation, added a semantic list, and explained that static JSX and Tailwind classes do not require a Client Component. The logical-spacing correction is retained: `ps-*` targets inline start, which is the right side in RTL, while `pe-*` targets inline end.
+
+### F1 Provider Spine — Complete
+The learner implemented Query, Theme, and composed application providers and reported successful lint, typecheck, and production build. Demonstrated concepts:
+
+- `QueryClient`, not React state or `AppProviders`, owns the Query cache;
+- a lazy `useState` initializer preserves one Query Client instance for the provider lifetime;
+- `staleTime` describes freshness, while inactive-cache retention belongs to `gcTime`;
+- the server cannot read browser `localStorage` or system-theme state;
+- the theme class may change on `<html>` during hydration, so suppression is narrow and intentional;
+- theme preference may be persisted because it is not an authentication secret.
+
+The learning checkpoint passed. The learner explained the Server/Client composition boundary, the Query Client lifecycle 
+
+across provider unmount/remount, and the need to delay browser-dependent theme UI until mount to avoid hydration mismatch.
 ### Next Lesson
 
-F1 foundation: what each dependency solves, environment and provider boundaries, semantic design tokens, accessible active navigation, the initial file map, and how to split scaffolding into explainable implementation batches.
+Finish the provider teach-back, then build the F1 environment and typed API foundation as a small connected group: public environment validation, URL construction, response-envelope parsing, typed errors, and the retry-policy boundary.
 
 ## Learning Log Rule
 

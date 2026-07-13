@@ -8,7 +8,7 @@
 |---|---|---|
 | F0 | Documentation and verified contracts | Complete and approved |
 | F0.5 | Contract decisions without backend changes | Complete and approved |
-| F1 | Frontend foundation and visual direction | Next |
+| F1 | Frontend foundation and visual direction | In progress — foundation and provider spine implemented |
 | F2 | Landing page and public discovery | Proposed |
 | F3 | Authentication and session | Proposed |
 | F4 | Profiles and current-user content | Proposed |
@@ -67,7 +67,7 @@ Latest backend commit and owner decisions; both supplied.
 
 ### Goal
 
-Remove or contain backend contract gaps so F1 can begin without inventing APIs or changing the backend prematurely.
+Remove or contain backend contract gaps without changing the backend prematurely.
 
 ### In Scope
 
@@ -260,7 +260,7 @@ Give users clear personal identity and content-management entry points.
 
 ### Concepts
 
-Private data boundaries, upload preflight, and cache identity propagation.
+Private vs public data, upload preflight, cache identity propagation, profile SEO boundary.
 
 ### Deliverables
 
@@ -268,11 +268,11 @@ Private profile and my-posts list.
 
 ### Verification
 
-Privacy field audit, empty private profile/posts, avatar type/size/signature errors, upload retry, cache refresh, mobile/keyboard/screen-reader checks, and confirmation that author identity is not linked to a missing public route.
+Privacy field audit, owner/non-owner behavior, missing profile, empty posts, avatar type/size/signature errors, upload retry, cache refresh, mobile/keyboard/screen-reader checks.
 
 ### Definition of Done
 
-Private profile and My Posts work without exposing email on public surfaces or implying a public-profile feature.
+Email never appears publicly; private profile and current-user content management work without inventing a public-profile contract.
 
 ### Dependencies
 
@@ -359,11 +359,11 @@ Guest gating, pre-liked/pre-saved state, duplicate clicks, rollback, count recon
 
 ### Definition of Done
 
-Feed actions show correct state; lazy visible-card request volume is measured and documented; cached status is reused; failures roll back correctly; reports do not promise an admin outcome. If measured volume is unacceptable, F6 stops for an explicit batch-contract decision instead of hiding the risk.
+Feed actions show correct state without unacceptable request volume; failures roll back correctly; reports do not promise an admin outcome.
 
 ### Dependencies
 
-F3 auth, F2 feed/detail, and the accepted F0.5 lazy viewer-state decision.
+F3 auth, F2 feed/detail, and the accepted lazy visible-card viewer-state decision.
 
 ## Sprint F7 — SEO, Accessibility, Performance, and Policy Quality
 
@@ -468,6 +468,6 @@ This sprint is intentionally not detailed or approved. Its roadmap must be creat
 1. F0 documents and this roadmap are approved.
 2. The displayed product name is سند/SND; the tagline remains intentionally open.
 3. F1 may start with visual exploration, but final tokens require owner approval.
-4. Public Profile is deferred from V1; F4 must not create its route, links, query, or SEO surface.
-5. F6 starts with the accepted lazy visible-card viewer-state strategy and must measure its real request cost before completion.
+4. F4 cannot complete without the public-profile backend contract.
+5. F6 cannot complete without an accepted Like/Save viewer-state performance decision.
 6. F3/F8 production auth cannot complete until the exact Vercel origin is known and allowlisted after deployment.
