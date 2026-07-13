@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-
+import {AppProviders} from "@/providers/app-providers";
 import "../styles/globals.css";
 
 export const metadata: Metadata = {
@@ -17,8 +17,10 @@ type RootLayoutProps = Readonly<{
 
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
-    <html lang="ar" dir="rtl">
-      <body>{children}</body>
-    </html>
+      <html lang="ar" dir="rtl" suppressHydrationWarning>
+          <body>
+              <AppProviders>{children}</AppProviders>
+          </body>
+      </html>
   );
 }
