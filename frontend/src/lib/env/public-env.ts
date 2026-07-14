@@ -4,9 +4,11 @@ function isValidApiBaseUrl(value: string): boolean {
     try {
         const url = new URL(value);
         const normalizedPath = url.pathname.replace(/\/+$/, "");
+        const hasAllowedProtocol =
+            url.protocol === "https:" || (process.env.NODE_ENV !== "production" && url.protocol === "http:");
 
         return (
-            (url.protocol === "https:" || url.protocol === "http:") &&
+            hasAllowedProtocol &&
             normalizedPath === "/api/v1" &&
             url.search === "" &&
             url.hash === "" &&
@@ -23,7 +25,10 @@ const publicEnvSchema = z.object({
     .string()
     .trim()
     .min(1, "NEXT_PUBLIC_API_BASE_URL is required")
-    .refine(isValidApiBaseUrl, "NEXT_PUBLIC_API_BASE_URL must be an HTTP(S) URL ending with /api/v1")
+    .refine(
+        isValidApiBaseUrl,
+        "NEXT_PUBLIC_API_BASE_URL must use HTTPS in production, may use HTTP only outside production, and must end with /api/v1"
+    )
     .transform((value) => value.replace(/\/+$/, "")),
 });
 

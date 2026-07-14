@@ -27,7 +27,11 @@ function isAbortError(error: unknown): boolean {
 async function parseJsonResponse(response: Response, requestId: string | null): Promise<unknown> {
     try {
         return await response.json();
-    } catch {
+    } catch (error) {
+        if (isAbortError(error)) {
+            throw error;
+        }
+
         throw new ApiError({
             kind: "invalid-response",
             message: "The API returned an invalid JSON response",
