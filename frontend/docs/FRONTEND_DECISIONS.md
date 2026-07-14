@@ -157,3 +157,21 @@ This file records durable frontend Architecture Decision Records. `Accepted` mea
 **Status:** Accepted
 **Decision:** The F1 API client owns validated URL construction, headers, transport, abort preservation, envelope parsing, request IDs, and error classification. Feature schemas, query keys, retry policy, Authorization, CSRF, and refresh coordination stay with their owning feature/auth layers.
 **Consequence:** F1 does not pre-implement F3 security flows or hide feature business behavior inside generic transport code.
+
+## FADR-027 — Hydrated TanStack Query for Public Lists
+
+**Status:** Accepted  
+**Decision:** Public feed preview, full public feed, and public comments use feature-owned Query Options factories. Server Components prefetch with request-scoped Query Clients and pass dehydrated state to focused Client list components.
+**Consequence:** Public first content remains server-prefetched while the browser gains cache reuse, background state, abort propagation, and section-level retry. URL parameters, not Query cache, remain the owner of shareable filters and pagination.
+
+## FADR-028 — Scoped Motion Islands
+
+**Status:** Accepted  
+**Decision:** Add `motion` with the first purposeful consumer in the F2 landing Hero and reveal wrappers. Keep motion imports inside landing feature islands and use CSS for ordinary control hover/focus transitions.
+**Consequence:** The visual identity can be expressive without hydrating the public layout or making animation required for comprehension. Reduced-motion behavior is mandatory.
+
+## FADR-029 — Legacy Media Does Not Invalidate Public Posts
+
+**Status:** Accepted, compatibility boundary  
+**Decision:** Match the actual Post transport shape `images: string[]`, but render only verified HTTPS images from the configured Cloudinary host. Relative legacy `/uploads` values remain data debt and are not converted into frontend URLs.
+**Consequence:** One obsolete media reference no longer hides every post in a paginated response. The text post remains readable, while broken or unapproved image origins never reach `next/image`.

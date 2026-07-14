@@ -273,6 +273,8 @@ Do not manually set the multipart boundary. On success update profile/auth user 
 
 Frontend usage: landing preview and public feed. Query key includes page, limit, sort, and committed search. Public response lacks `likedByMe`, `savedByMe`, and `commentsCount`.
 
+Deployed-data note verified on 2026-07-14: some legacy Post documents still contain relative `/uploads/posts/...` strings in `images`, although current uploads use Cloudinary and those legacy files are no longer available on Render. The transport shape remains `string[]`; frontend schema validation must not reject the entire post page because one legacy string is relative. Rendering accepts only explicitly supported HTTPS media hosts and omits unavailable legacy media. Removing or migrating the legacy records is a separate backend/data-maintenance task.
+
 ### My Posts
 
 | Property | Value |
@@ -473,6 +475,10 @@ The returned Report can include reporter, target details, reason, optional detai
 These are deployment/monitoring endpoints, not normal client polling targets.
 
 ## Accepted Contract Limitations
+
+### Legacy Post Media
+
+Current backend serialization returns stored image strings without converting or validating them at read time. New images are Cloudinary URLs, but historical relative `/uploads` values may remain. The frontend treats these strings as untrusted media references: posts remain readable, only verified HTTPS Cloudinary images enter `next/image`, and no storage identifier or replacement URL is invented.
 
 ### Public Profile
 

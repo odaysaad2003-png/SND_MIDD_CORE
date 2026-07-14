@@ -61,6 +61,12 @@ root/
 
 Feature folders own feature-specific components, hooks, API functions, schemas, types, and tests. `components/ui` contains reusable visual primitives, not business logic. Cross-feature imports should go through intentional public exports rather than internal file paths.
 
+### Public Query Hydration Pattern
+
+F2 public lists use one feature-owned Query Options factory per resource. A Server Component creates a request-scoped Query Client, prefetches the public query, dehydrates it, and renders a focused Client Component inside `HydrationBoundary`. The browser Query Provider hydrates the same key, reuses fresh data, and owns background fetch/refetch state. API functions remain transport/schema boundaries; URL parameters continue to own shareable search, sort, and page state.
+
+This pattern does not turn the whole route into a Client Component and does not duplicate prefetched server data into React local state. Feature query factories own keys, freshness, abort propagation, and bounded retry policy.
+
 ## Route Strategy
 
 ### Public Routes
@@ -223,6 +229,8 @@ The reference image contributes only the سند/SND logo. Product claims and col
 ## Motion
 
 Use Framer Motion for small reveal sequences, page-level continuity only where useful, and interaction feedback. Prefer CSS transitions for simple hover/focus states. Respect `prefers-reduced-motion`, avoid animating layout-critical dimensions, and never delay access to content.
+
+F2 installs `motion` at its first concrete consumer. Motion stays inside landing-specific Client islands; the public layout, static sections, route pages, header, footer, and server-prefetch wrappers remain server-renderable. Hero movement uses opacity/transform and continuous decorative orbits only, while `useReducedMotion` removes nonessential movement.
 
 ## Accessibility
 

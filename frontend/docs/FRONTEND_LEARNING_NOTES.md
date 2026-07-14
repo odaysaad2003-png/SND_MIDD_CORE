@@ -227,7 +227,7 @@ The detailed line-by-line mechanics of `setup.ts` and the F1 test files were int
 
 ### Next Lesson
 
-Start Sprint F2 by auditing its landing/public-discovery contracts and tracing one public read flow from a feature API function through the shared client and backend envelope to a server-renderable UI. Do not pull F3 Authorization, CSRF, or refresh coordination into F2.
+Study the F2 implementation candidate in this order: public Query Options factory → request-scoped server prefetch → dehydrated `HydrationBoundary` → client `useQuery` states/refetch → shared API/schema boundary. Explain why URL parameters still own search/sort/page, why one legacy media string previously rejected all ten posts, and why filtering unsupported media at the renderer is different from silently changing backend data. Then review the scoped Motion island and reduced-motion path. Do not pull F3 Authorization, CSRF, or refresh coordination into F2.
 
 ## Learning Log Rule
 

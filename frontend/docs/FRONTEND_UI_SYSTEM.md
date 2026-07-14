@@ -2,7 +2,7 @@
 
 ## Status
 
-The UI-system structure was approved on 2026-07-13. Calm Contemporary, IBM Plex Sans Arabic, and the F1 semantic light/dark token direction were approved and implemented on 2026-07-14. Feature-specific layouts, final landing copy, and production imagery remain F2 work.
+The UI-system structure was approved on 2026-07-13. Calm Contemporary, IBM Plex Sans Arabic, and the F1 semantic light/dark token direction were approved and implemented on 2026-07-14. The F2 landing/header/footer/loading revision is an implementation candidate awaiting owner browser verification; final production photography remains future work.
 
 ## Brand Boundary
 
@@ -12,7 +12,7 @@ The UI-system structure was approved on 2026-07-13. Calm Contemporary, IBM Plex 
 - Audience: residents of Gaza
 - The supplied image is a source for the logo only.
 - Do not copy product claims, categories, features, roles, layouts, or colors from that image.
-- The prepared transparent mark is stored at `public/brand/snd-logo.png`; preserve its proportions and colors. Add light/dark or compact variants only when a real placement proves they are needed and the owner approves them.
+- The prepared transparent mark is stored at `public/brand/snd-logo.png`; preserve its proportions and colors. F2 places the unchanged asset on a stable white brand plate in navigation, Hero, and footer so its dark-blue strokes remain visible in dark mode without CSS recoloring.
 
 ## Design Principles
 

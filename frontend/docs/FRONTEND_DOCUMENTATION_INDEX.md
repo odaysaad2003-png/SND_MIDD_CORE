@@ -9,9 +9,9 @@ This index is the entry point for every human or AI working on the SND frontend.
 - Sprint F0: complete and approved on 2026-07-13.
 - Sprint F0.5: contract decisions complete and approved on 2026-07-13; no backend code changed.
 - Sprint F1: implementation and learning work complete; final owner-run verification is the only remaining closure gate after the 2026-07-14 code/document synchronization.
-- Next: Sprint F2 — landing page and public discovery.
-- Frontend implementation code: F1 foundation exists; no F2 feature implementation has started.
-- Current learning step: audit the F2 public-read contract and trace the first public data flow before implementation.
+- Sprint F2: implementation candidate prepared on 2026-07-14; owner verification and learning review remain open.
+- Frontend implementation code: landing, public feed, public post detail, and public comments exist; the public list/query and visual-system revision awaits `lint`, `type`, `test`, `build`, and browser review.
+- Current learning step: study the TanStack Query server-prefetch/hydration flow and explain the legacy-media boundary before closing F2.
 
 ## Mandatory Reading Order
 

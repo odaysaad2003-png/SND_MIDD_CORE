@@ -9,7 +9,7 @@
 | F0 | Documentation and verified contracts | Complete and approved |
 | F0.5 | Contract decisions without backend changes | Complete and approved |
 | F1 | Frontend foundation and visual direction | Closure verification — implementation/docs synchronized |
-| F2 | Landing page and public discovery | Next — contract audit before implementation |
+| F2 | Landing page and public discovery | Implementation candidate — verification and learning gates open |
 | F3 | Authentication and session | Proposed |
 | F4 | Profiles and current-user content | Proposed |
 | F5 | Post creation, editing, and images | Proposed |
