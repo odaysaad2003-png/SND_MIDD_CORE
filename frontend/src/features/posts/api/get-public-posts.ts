@@ -7,9 +7,9 @@ import {
     type PublicPostsQuery,
     type PublicPostsQueryInput,
     type PublicPostsResult,
-} from "../public-posts.schema";
+} from "../schemas/public-posts.schema";
 
-type GetPublicPostsOptions = Readonly<{
+export type GetPublicPostsOptions = Readonly<{
     cache?: RequestCache;
     query?: PublicPostsQueryInput;
     signal?: AbortSignal;
