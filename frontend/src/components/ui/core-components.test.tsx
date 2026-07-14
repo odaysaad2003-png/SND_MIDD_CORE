@@ -59,6 +59,7 @@ describe("core UI components", () => {
         const user = userEvent.setup();
         render(<ThemeToggle />);
 
+await user.click(screen.getByLabelText("المظهر الحالي: الوضع الفاتح"));
         expect(screen.getByRole("button", {name: "الوضع الفاتح"})).toHaveAttribute("aria-pressed", "true");
 
         await user.click(screen.getByRole("button", {name: "الوضع الداكن"}));
