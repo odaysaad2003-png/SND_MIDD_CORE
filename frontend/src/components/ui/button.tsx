@@ -5,12 +5,12 @@ import type {ComponentProps} from "react";
 import {cn} from "@/lib/utils/cn";
 
 const buttonVariants = cva(
-    "inline-flex min-h-11 items-center justify-center gap-2 rounded-md px-4 text-sm font-semibold transition-colors disabled:pointer-events-none disabled:opacity-55 aria-busy:cursor-wait [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+    "inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold transition-[transform,background-color,border-color,color,box-shadow] duration-200 active:translate-y-px disabled:pointer-events-none disabled:opacity-55 aria-busy:cursor-wait [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
     {
         variants: {
             variant: {
-                primary: "bg-brand text-brand-foreground hover:bg-brand/90 active:bg-brand/80",
-                secondary: "border border-border bg-surface text-foreground hover:bg-surface-muted",
+                primary: "bg-brand text-brand-foreground shadow-[0_8px_22px_color-mix(in_oklch,var(--brand)_22%,transparent)] hover:bg-brand/90 hover:shadow-[0_10px_28px_color-mix(in_oklch,var(--brand)_28%,transparent)] active:bg-brand/80",
+                secondary: "border border-border bg-surface text-foreground shadow-sm hover:border-brand/20 hover:bg-surface-muted",
                 ghost: "text-foreground hover:bg-surface-muted",
                 danger: "bg-danger text-danger-foreground hover:bg-danger/90 active:bg-danger/80",
                 link: "min-h-0 px-0 text-brand underline-offset-4 hover:underline",
