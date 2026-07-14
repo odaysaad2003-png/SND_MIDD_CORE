@@ -38,7 +38,7 @@ export const publicPostsQuerySchema = z
     page: z.number().int().positive().default(1),
     limit: z.number().int().positive().max(50).default(10),
     sort: z.enum(["latest", "oldest"]).default("latest"),
-    search: z.string().trim().max(100).optional(),
+    search: z.string().trim().max(100,"Search term is too long").optional(),
 })
 .strict();
 
