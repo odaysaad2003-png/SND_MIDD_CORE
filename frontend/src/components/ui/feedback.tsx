@@ -31,7 +31,7 @@ export function Feedback({className, description, title, variant = "info", ...pr
     return (
         <div
             role={role}
-            className={cn("flex gap-3 rounded-md border p-4", feedbackStyles[variant], className)}
+            className={cn("flex gap-3 rounded-2xl border p-5", feedbackStyles[variant], className)}
             {...props}
         >
             <Icon className="mt-0.5 size-5 shrink-0" aria-hidden="true" />
