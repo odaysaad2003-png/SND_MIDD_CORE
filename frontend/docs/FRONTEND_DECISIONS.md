@@ -110,11 +110,11 @@ This file records durable frontend Architecture Decision Records. `Accepted` mea
 **Decision:** Support light/dark themes from V1 using semantic tokens with independently designed values.  
 **Consequence:** Dark mode is not an automatic inversion or pure-black variant.
 
-## FADR-019 — Visual Direction Remains Open
+## FADR-019 — Calm Contemporary Visual Direction
 
 **Status:** Accepted  
-**Decision:** Review multiple visual styles before adopting final color and typography values. Use realistic photography with restrained abstract shapes.  
-**Consequence:** Sprint F0 defines token roles only. The supplied image contributes the logo and no other product/design facts.
+**Decision:** After comparing Warm Civic, Calm Contemporary, and Human Editorial on controlled F1 content, adopt Calm Contemporary with IBM Plex Sans Arabic and independently tuned light/dark semantic tokens.
+**Consequence:** Warm Civic and Human Editorial remain comparison history, not alternate themes. The supplied image contributes only the logo; its colors, claims, features, and layout are not product requirements.
 
 ## FADR-020 — WCAG 2.2 AA
 
@@ -145,3 +145,15 @@ This file records durable frontend Architecture Decision Records. `Accepted` mea
 **Status:** Accepted  
 **Decision:** Build a small reusable navigation-link component on top of Next.js `Link` and `usePathname` rather than adding React Router. It owns exact/prefix route matching and applies `aria-current="page"` to the active destination.  
 **Consequence:** Only the active-link island requires client JavaScript; the whole header/layout does not become a Client Component. Active state must remain visible without relying on color alone and must be verified for RTL, keyboard focus, nested routes, and mobile touch targets.
+
+## FADR-025 — Install Dependencies at the First Real Consumer
+
+**Status:** Accepted
+**Decision:** Close F1 with the dependencies used by implemented behavior. Add React Hook Form with the first real form and add Framer Motion only when a purposeful motion requirement exists. Use SND-owned shadcn-style primitives rather than adding a runtime shadcn package.
+**Consequence:** The foundation avoids unused production dependencies while keeping approved ownership boundaries. Any later addition must include its consuming feature and verification in the same sprint.
+
+## FADR-026 — Shared API Client Stops at HTTP Infrastructure
+
+**Status:** Accepted
+**Decision:** The F1 API client owns validated URL construction, headers, transport, abort preservation, envelope parsing, request IDs, and error classification. Feature schemas, query keys, retry policy, Authorization, CSRF, and refresh coordination stay with their owning feature/auth layers.
+**Consequence:** F1 does not pre-implement F3 security flows or hide feature business behavior inside generic transport code.

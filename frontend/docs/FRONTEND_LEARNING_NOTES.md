@@ -192,7 +192,7 @@ The learner reviewed why ten feed posts can create `1 + 2N = 21` requests under 
 The learner created and ran the Arabic RTL Next.js foundation, added a semantic list, and explained that static JSX and Tailwind classes do not require a Client Component. The logical-spacing correction is retained: `ps-*` targets inline start, which is the right side in RTL, while `pe-*` targets inline end.
 
 ### F1 Provider Spine — Complete
-The learner implemented Query, Theme, and composed application providers and reported successful lint, typecheck, and production build. Demonstrated concepts:
+The learner implemented Query, Theme, and composed application providers and reported successful lint, type generation/check, and production build. Demonstrated concepts:
 
 - `QueryClient`, not React state or `AppProviders`, owns the Query cache;
 - a lazy `useState` initializer preserves one Query Client instance for the provider lifetime;
@@ -204,9 +204,26 @@ The learner implemented Query, Theme, and composed application providers and rep
 The learning checkpoint passed. The learner explained the Server/Client composition boundary, the Query Client lifecycle 
 
 across provider unmount/remount, and the need to delay browser-dependent theme UI until mount to avoid hydration mismatch.
+
+### F1 Environment and API Foundation — Complete on 2026-07-14
+
+The learner demonstrated that:
+
+- a successful `204 No Content` must not be parsed as JSON;
+- feature API functions own feature-specific request/data shapes, while the shared API client owns common HTTP transport and envelope behavior;
+- cancelling a request must preserve `AbortError` instead of disguising it as a network or invalid-response failure;
+- blindly retrying a POST can duplicate a mutation;
+- a public API base URL may be exposed through `NEXT_PUBLIC_*`, while secrets must never enter the client bundle.
+
+The implemented tests cover environment validation, the `/api/v1` URL boundary, JSON/envelope parsing, request IDs, `204`, the three API error categories, and abort preservation. Runtime network payloads still begin as `unknown`; deeper feature-data validation belongs in feature schemas when those features are implemented.
+
+### F1 UI and Visual Foundation — Complete on 2026-07-14
+
+The owner approved Calm Contemporary, IBM Plex Sans Arabic, the semantic token direction, and the prepared logo. The implementation keeps RTL at the document root, uses logical spacing, isolates theme interaction as a client island, gives controls visible focus and adequate targets, distinguishes light/dark token values, and respects reduced-motion preferences. Unit/component tests and the actual lint, type, test, and build commands form the repeatable F1 verification gate.
+
 ### Next Lesson
 
-Finish the provider teach-back, then build the F1 environment and typed API foundation as a small connected group: public environment validation, URL construction, response-envelope parsing, typed errors, and the retry-policy boundary.
+Start Sprint F2 by auditing its landing/public-discovery contracts and tracing one public read flow from a feature API function through the shared client and backend envelope to a server-renderable UI. Do not pull F3 Authorization, CSRF, or refresh coordination into F2.
 
 ## Learning Log Rule
 

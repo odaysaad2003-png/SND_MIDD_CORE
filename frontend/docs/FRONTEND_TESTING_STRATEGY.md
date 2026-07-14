@@ -2,7 +2,7 @@
 
 ## Status
 
-Approved V1 strategy as of 2026-07-13. The frontend project does not yet exist, so no frontend test result is claimed.
+Approved V1 strategy as of 2026-07-13. The F1 test foundation was implemented on 2026-07-14 with Vitest, React Testing Library, user-event, jest-dom, and jsdom. MSW, Playwright, and automated axe coverage remain planned for the feature/integration layers that need them.
 
 ## Objectives
 
@@ -13,16 +13,25 @@ Approved V1 strategy as of 2026-07-13. The frontend project does not yet exist, 
 - keep tests fast enough for normal development and CI;
 - use production smoke tests as a final layer, not the primary safety net.
 
-## Proposed Tooling
+## Tooling
 
-- Vitest for unit tests;
-- React Testing Library and user-event for components;
+- Vitest for unit tests — active;
+- React Testing Library, user-event, jest-dom, and jsdom for components — active;
 - MSW for API-bound component/integration tests;
 - Playwright for browser E2E, responsive, and deployed smoke tests;
 - axe integration for automated accessibility checks;
 - TypeScript strict, lint, and production build as required static gates.
 
-Tool versions are selected when F1 is created and recorded in the lockfile; this document does not assume versions.
+Installed versions are recorded in `package-lock.json`. Do not claim the planned MSW/Playwright/axe layers passed before they are installed and executed.
+
+## F1 Implemented Coverage
+
+- public-environment runtime validation and normalization;
+- API-boundary URL construction and escape rejection;
+- successful/error envelope handling, `204`, request IDs, network/invalid responses, and abort preservation;
+- disabled Button behavior, accessible Field relationships, blocking Feedback semantics, and Theme Toggle interaction.
+
+F1 has unit and component coverage only. It has no MSW integration suite, browser E2E runner, automated axe runner, or deployed-production verification.
 
 ## Test Layers
 
@@ -205,7 +214,7 @@ Proposed pull-request gates:
 ```text
 install locked dependencies
 lint
-typecheck
+type
 unit/component/integration tests
 production build
 critical accessibility checks
