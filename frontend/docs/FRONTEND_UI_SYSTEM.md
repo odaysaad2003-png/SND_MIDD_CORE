@@ -2,7 +2,7 @@
 
 ## Status
 
-The UI-system structure was approved on 2026-07-13. Final palette, typography, and visual direction remain open until several style explorations are reviewed with the owner.
+The UI-system structure was approved on 2026-07-13. Calm Contemporary, IBM Plex Sans Arabic, and the F1 semantic light/dark token direction were approved and implemented on 2026-07-14. Feature-specific layouts, final landing copy, and production imagery remain F2 work.
 
 ## Brand Boundary
 
@@ -12,7 +12,7 @@ The UI-system structure was approved on 2026-07-13. Final palette, typography, a
 - Audience: residents of Gaza
 - The supplied image is a source for the logo only.
 - Do not copy product claims, categories, features, roles, layouts, or colors from that image.
-- When the logo asset is prepared, isolate the exact سند/SND mark and preserve its proportions; create approved light/dark and compact variants only after visual review.
+- The prepared transparent mark is stored at `public/brand/snd-logo.png`; preserve its proportions and colors. Add light/dark or compact variants only when a real placement proves they are needed and the owner approves them.
 
 ## Design Principles
 
@@ -23,23 +23,11 @@ The UI-system structure was approved on 2026-07-13. Final palette, typography, a
 5. **Progressive detail:** essential content appears first; secondary metadata and controls stay available without competing.
 6. **Accessible character:** the product can feel distinctive without sacrificing contrast, focus, motion preferences, or readable type.
 
-## Visual Directions to Explore
+## Visual Direction Decision
 
-These are style explorations, not adopted palettes:
+`Calm Contemporary` is the adopted direction: generous whitespace, crisp Arabic typography, low-noise surfaces, controlled brand accents, subtle depth, and restrained motion.
 
-### A. Warm Civic
-
-Real community photography, warm neutral surfaces, restrained geometric motifs, clear public-service trust, and a softened dark theme.
-
-### B. Calm Contemporary
-
-More whitespace, crisp typography, low-noise cards, controlled brand accents, subtle depth, and minimal abstract motion.
-
-### C. Human Editorial
-
-Photography-led storytelling, editorial typography contrast, expressive but sparse shapes, and strong narrative sections on the landing page.
-
-Each direction should be demonstrated on the same small set of screens: landing hero, post card, auth form, empty state, and dark-mode surface. The owner chooses a direction before final token values are committed.
+`Warm Civic` and `Human Editorial` remain comparison history only. They are not alternate runtime themes, and their exploratory hard-coded styles do not remain in production source. Future F2 compositions must use the semantic tokens rather than copying colors from the comparison exercise.
 
 ## Semantic Color Tokens
 
@@ -78,7 +66,7 @@ Requirements:
 - variable-font delivery when it materially reduces weight;
 - no dependence on font weight alone for hierarchy.
 
-Candidate families may be explored during F1, such as IBM Plex Sans Arabic or another high-quality Arabic UI family. No final font is adopted in Sprint F0.
+IBM Plex Sans Arabic is the adopted F1 family. The application imports local package assets for weights 400, 500, 600, and 700 and keeps Arial, Helvetica, and generic `sans-serif` fallbacks. Adding more weights requires a demonstrated UI need because each file affects delivery size.
 
 Type roles:
 
@@ -200,6 +188,6 @@ Target WCAG 2.2 AA. Tokens and components must support:
 
 Arabic copy should be clear, respectful, direct, and non-judgmental. Avoid technical auth language, exaggerated promises, and language implying that a report guarantees a specific moderation result. Error copy tells the user what happened, what remains safe, and what they can do next.
 
-## Logo Integration Placeholder
+## Logo Integration
 
-Until the logo is isolated and approved, layouts reserve flexible brand space without hardcoding its aspect ratio into navigation. Do not use the full supplied product-board image in the interface.
+Use `public/brand/snd-logo.png` as the approved transparent source asset. Render it with explicit dimensions or a stable container, preserve its aspect ratio, do not recolor it through CSS filters, and never use the original product-board image in the interface. Navigation-specific variants are created only after the real F2 header establishes a measured need.

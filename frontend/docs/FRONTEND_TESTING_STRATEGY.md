@@ -2,7 +2,7 @@
 
 ## Status
 
-Approved V1 strategy as of 2026-07-13. The F1 test foundation was implemented on 2026-07-14 with Vitest, React Testing Library, user-event, jest-dom, and jsdom. MSW, Playwright, and automated axe coverage remain planned for the feature/integration layers that need them.
+Approved V1 strategy as of 2026-07-13. The F1 test foundation was implemented on 2026-07-14 with Vitest, React Testing Library, user-event, jest-dom, and jsdom. The final F1 closure run must be reported by the owner after the synchronized code/document review; this file does not claim an unreported pass. MSW, Playwright, and automated axe coverage remain planned for the feature/integration layers that need them.
 
 ## Objectives
 
@@ -26,7 +26,7 @@ Installed versions are recorded in `package-lock.json`. Do not claim the planned
 
 ## F1 Implemented Coverage
 
-- public-environment runtime validation and normalization;
+- public-environment configuration validation and normalization;
 - API-boundary URL construction and escape rejection;
 - successful/error envelope handling, `204`, request IDs, network/invalid responses, and abort preservation;
 - disabled Button behavior, accessible Field relationships, blocking Feedback semantics, and Theme Toggle interaction.

@@ -8,8 +8,8 @@
 |---|---|---|
 | F0 | Documentation and verified contracts | Complete and approved |
 | F0.5 | Contract decisions without backend changes | Complete and approved |
-| F1 | Frontend foundation and visual direction | In progress — foundation and provider spine implemented |
-| F2 | Landing page and public discovery | Proposed |
+| F1 | Frontend foundation and visual direction | Closure verification — implementation/docs synchronized |
+| F2 | Landing page and public discovery | Next — contract audit before implementation |
 | F3 | Authentication and session | Proposed |
 | F4 | Profiles and current-user content | Proposed |
 | F5 | Post creation, editing, and images | Proposed |
@@ -117,7 +117,8 @@ Create a production-ready Next.js foundation and choose the visual direction.
 ### In Scope
 
 - create `frontend/` App Router project with TypeScript strict;
-- Tailwind, shadcn/ui baseline, TanStack Query, forms/Zod, theme, motion, icons;
+- Tailwind, SND-owned shadcn-style primitives, TanStack Query, Zod environment validation, theme, and icons;
+- record React Hook Form and motion ownership without installing them before a real consumer;
 - environment validation and API envelope/error layer;
 - providers and root Arabic/RTL metadata;
 - route groups and feature folder boundaries;
@@ -138,11 +139,11 @@ App Router boundaries, semantic tokens, RTL systems, design-system primitives, d
 
 ### Deliverables
 
-Buildable frontend foundation, component showcase, logo asset variants, and owner-approved visual direction.
+Buildable frontend foundation, controlled component showcase, prepared logo asset, and owner-approved visual direction.
 
 ### Verification
 
-Lint/typecheck/build, responsive component review, keyboard/focus review, contrast checks, reduced-motion check, and no-secret environment review.
+Lint, typecheck, unit/component tests, production build, responsive component review, keyboard/focus review, contrast checks, reduced-motion check, and no-secret environment review.
 
 ### Definition of Done
 
@@ -150,7 +151,7 @@ The foundation builds cleanly; token direction is explicitly approved; core comp
 
 ### Dependencies
 
-F0 approval. Final color values depend on owner selection during this sprint.
+F0 approval. Calm Contemporary and the final F1 token direction were approved on 2026-07-14.
 
 ## Sprint F2 — Landing Page and Public Discovery
 
@@ -192,7 +193,7 @@ A guest can understand سند, browse real public content, and open a post/comme
 
 ### Dependencies
 
-F1 foundation and approved landing copy/imagery.
+F1 foundation. Final landing copy and production imagery require owner approval before F2 completion, but they do not block the initial public-contract and data-flow work.
 
 ## Sprint F3 — Authentication and Session
 

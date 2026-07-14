@@ -2,23 +2,23 @@
 
 ## Status and Constraints
 
-This architecture baseline was approved by the product owner on 2026-07-13. It plans a Next.js App Router frontend without creating implementation code. It follows the current API, an in-memory access token, a cross-origin HttpOnly refresh cookie, Arabic/RTL-first rendering, and a mobile-first performance target.
+This architecture baseline was approved on 2026-07-13 and its F1 foundation was implemented on 2026-07-14. The current code establishes App Router, Arabic/RTL rendering, providers, semantic UI primitives, environment validation, and the shared HTTP boundary. Feature/auth layers remain planned and must follow the current backend contract, in-memory access tokens, the cross-origin HttpOnly refresh cookie, and mobile-first performance constraints.
 
 ## Technology Baseline
 
 - Next.js App Router
 - TypeScript strict
 - Tailwind CSS
-- shadcn/ui as accessible primitives, adapted to the SND visual system
+- SND-owned shadcn-style accessible primitives adapted to the SND visual system
 - TanStack Query for server state
-- React Hook Form and Zod for forms
-- Framer Motion for purposeful client-side motion
+- Zod for runtime validation; React Hook Form begins with the first real form
+- Purposeful client-side motion only when a measured requirement justifies adding a library
 - next-themes for theme selection
 - Lucide icons
 
-Testing additions proposed later: Vitest, React Testing Library, MSW, Playwright, and axe-based accessibility checks. No Redux or Zustand is justified by the current scope.
+Vitest and React Testing Library are active in F1. MSW, Playwright, and axe-based automation remain planned for the feature layers that require them. No Redux or Zustand is justified by the current scope.
 
-## Proposed Repository Shape
+## Repository Shape and Planned Growth
 
 ```text
 root/

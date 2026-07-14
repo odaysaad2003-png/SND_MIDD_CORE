@@ -6,11 +6,12 @@ This index is the entry point for every human or AI working on the SND frontend.
 
 ## Current Milestone
 
-- Sprint F0: complete and approved on 2026-07-13
-- Sprint F0.5: contract decisions complete and approved on 2026-07-13; no backend code changed
-- Current: Sprint F1 — frontend foundation and visual direction
-- Frontend implementation code: not started
-- Current learning step: F1 foundation file map and first small implementation batch
+- Sprint F0: complete and approved on 2026-07-13.
+- Sprint F0.5: contract decisions complete and approved on 2026-07-13; no backend code changed.
+- Sprint F1: implementation and learning work complete; final owner-run verification is the only remaining closure gate after the 2026-07-14 code/document synchronization.
+- Next: Sprint F2 — landing page and public discovery.
+- Frontend implementation code: F1 foundation exists; no F2 feature implementation has started.
+- Current learning step: audit the F2 public-read contract and trace the first public data flow before implementation.
 
 ## Mandatory Reading Order
 
@@ -35,7 +36,7 @@ Before planning a sprint or making a material frontend change, read:
 
 Then inspect actual code and configuration:
 
-- frontend `package.json`, lockfile, TypeScript/configuration files, and current source tree once they exist;
+- frontend `package.json`, lockfile, TypeScript/configuration files, and current source tree;
 - relevant frontend feature files and their direct dependencies;
 - current backend routes, validation, controllers, services, and presenters for the feature being integrated;
 - current Git diff and working-tree state.
@@ -65,9 +66,9 @@ Never silently choose between material conflicts. Report the conflict and stop b
 | `FRONTEND_ARCHITECTURE.md` | App Router, boundaries, API/query/auth/state ownership, performance rules | Exact backend route details |
 | `FRONTEND_API_CONTRACT.md` | Exact frontend-used API methods, paths, inputs, outputs, errors, caching notes | Invented future endpoints |
 | `FRONTEND_AUTH_CONTRACT.md` | Access/refresh/CSRF/CORS/session responsibilities | General UI design |
-| `FRONTEND_UI_SYSTEM.md` | Design principles, tokens, components, RTL, responsive and visual direction | Final values not yet approved |
+| `FRONTEND_UI_SYSTEM.md` | Approved visual direction, semantic tokens, components, RTL, responsive and accessibility rules | Feature-specific layouts and final F2 content |
 | `FRONTEND_UX_STATES.md` | Loading, empty, errors, forms, uploads, retries, accessibility messaging | Business contracts |
-| `FRONTEND_TESTING_STRATEGY.md` | Test layers, matrices, mocking, accessibility, responsive and smoke policy | Claims that tests passed |
+| `FRONTEND_TESTING_STRATEGY.md` | Test layers, matrices, mocking, accessibility, responsive and smoke policy | Claims that unexecuted tests passed |
 | `FRONTEND_DEPLOYMENT_NOTES.md` | Vercel/Render environments, CORS/cookies, smoke, rollback, monitoring | Local feature implementation |
 | `FRONTEND_ROADMAP.md` | Sprint sequence, scope, dependencies, deliverables and DoD | Current verified state |
 | `FRONTEND_LEARNING_NOTES.md` | Learning method and Definition of Learned | Product/API authority |

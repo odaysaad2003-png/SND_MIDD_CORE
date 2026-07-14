@@ -212,7 +212,7 @@ Track repeated auth bootstrap failures, API 5xx, upload failure rate, and major 
 
 1. Final Vercel production domain is not yet known/allowlisted.
 2. Feed Like/Save uses accepted lazy visible-card status calls; F6 measurement may still require a future protected batch contract.
-3. Policy copy and final visual direction are not approved.
-4. Frontend implementation/tests do not yet exist.
+3. Final policy/landing copy and production imagery are not approved; Calm Contemporary and the F1 token direction are approved.
+4. F2–F7 feature implementation, browser E2E, deployed accessibility/performance checks, and production smoke verification do not yet exist.
 
-These blockers do not prevent documentation approval or F1 visual/foundation work, but they prevent declaring V1 production-ready.
+The F1 foundation reduces setup risk but does not make V1 production-ready; the remaining blockers belong to their planned feature and deployment sprints.

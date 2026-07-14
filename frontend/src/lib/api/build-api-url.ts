@@ -3,6 +3,7 @@ import {getPublicEnv} from "@/lib/env/public-env";
 const publicEnv = getPublicEnv();
 
 const apiBaseUrl = new URL(`${publicEnv.NEXT_PUBLIC_API_BASE_URL}/`);
+const absoluteUrlPattern = /^[a-zA-Z][a-zA-Z\d+.-]*:/;
 
 export function buildApiUrl(path: string): string {
     const requestedPath = path.trim();
@@ -11,7 +12,7 @@ export function buildApiUrl(path: string): string {
         throw new Error("API path must not be empty");
     }
 
-    if (requestedPath.startsWith("//")) {
+    if (requestedPath.startsWith("//") || absoluteUrlPattern.test(requestedPath)) {
         throw new Error("API path must be relative");
     }
 
@@ -22,11 +23,11 @@ export function buildApiUrl(path: string): string {
     }
 
     const url = new URL(relativePath, apiBaseUrl);
-
+    const hasEndpoint = url.pathname !== apiBaseUrl.pathname;
     const isInsideConfiguredApi = url.origin === apiBaseUrl.origin && url.pathname.startsWith(apiBaseUrl.pathname);
 
-    if (!isInsideConfiguredApi || url.hash !== "") {
-        throw new Error("API path must stay inside the configured API base URL");
+    if (!hasEndpoint || !isInsideConfiguredApi || url.hash !== "") {
+        throw new Error("API path must stay inside the configured API base URL and contain an endpoint");
     }
 
     return url.toString();

@@ -1,7 +1,9 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
 import {Monitor, Moon, Sun} from "lucide-react";
 import {useTheme} from "next-themes";
+import {useEffect, useState} from "react";
 
 import {Button} from "@/components/ui/button";
 
@@ -13,11 +15,17 @@ const themeOptions = [
 
 export function ThemeToggle() {
     const {setTheme, theme} = useTheme();
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     return (
         <div
             role="group"
             aria-label="اختيار مظهر الواجهة"
+            aria-busy={!mounted}
             className="flex rounded-lg border border-border bg-surface p-1"
         >
             {themeOptions.map(({icon: Icon, label, value}) => (
@@ -27,7 +35,7 @@ export function ThemeToggle() {
                     variant="ghost"
                     size="icon"
                     aria-label={label}
-                    aria-pressed={theme === value}
+                    aria-pressed={mounted && theme === value}
                     className="size-10 min-h-10 aria-pressed:bg-brand aria-pressed:text-brand-foreground"
                     onClick={() => setTheme(value)}
                 >

@@ -2,8 +2,8 @@
 
 ## Document Status
 
-- Phase: Sprint F0 — documentation and contract discovery
-- Status: approved by the product owner on 2026-07-13
+- Phase: Sprint F1 foundation implemented; preparing Sprint F2 public discovery
+- Status: product/contract context approved on 2026-07-13 and rechecked against the F1 frontend foundation on 2026-07-14
 - Product name used in this document: **سند (SND)**
 - Primary audience: residents of Gaza
 - Backend source: the latest backend commit supplied for this review, matching the commit deployed on Render

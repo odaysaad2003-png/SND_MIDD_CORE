@@ -221,6 +221,10 @@ The implemented tests cover environment validation, the `/api/v1` URL boundary, 
 
 The owner approved Calm Contemporary, IBM Plex Sans Arabic, the semantic token direction, and the prepared logo. The implementation keeps RTL at the document root, uses logical spacing, isolates theme interaction as a client island, gives controls visible focus and adequate targets, distinguishes light/dark token values, and respects reduced-motion preferences. Unit/component tests and the actual lint, type, test, and build commands form the repeatable F1 verification gate.
 
+### Deferred Test-Mechanics Lesson
+
+The detailed line-by-line mechanics of `setup.ts` and the F1 test files were intentionally postponed at the learner's request. Keep this visible and return to it before test complexity expands; do not confuse passing tests with understanding why isolation, stubs, dynamic imports, DOM cleanup, and assertions work.
+
 ### Next Lesson
 
 Start Sprint F2 by auditing its landing/public-discovery contracts and tracing one public read flow from a feature API function through the shared client and backend envelope to a server-renderable UI. Do not pull F3 Authorization, CSRF, or refresh coordination into F2.

@@ -23,6 +23,7 @@ describe("buildApiUrl", () => {
 
     it.each([
         "https://evil.example/posts",
+        "https://api.example.com/api/v1/posts",
         "//evil.example/posts",
         "../auth/refresh",
         "%2e%2e/auth/refresh",
