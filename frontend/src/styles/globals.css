@@ -50,6 +50,9 @@
   --danger-foreground: oklch(1 0 0);
   --info: oklch(0.57 0.13 245);
   --overlay: oklch(0.16 0.02 235 / 0.58);
+  --hero-deep: oklch(0.24 0.08 242);
+  --hero-mid: oklch(0.35 0.1 213);
+  --hero-warm: oklch(0.48 0.11 178);
   --radius-control-sm: 0.5rem;
   --radius-control-md: 0.75rem;
   --radius-surface: 1rem;
@@ -77,6 +80,9 @@
   --danger-foreground: oklch(0.16 0.02 235);
   --info: oklch(0.72 0.12 240);
   --overlay: oklch(0.08 0.015 235 / 0.72);
+  --hero-deep: oklch(0.12 0.035 242);
+  --hero-mid: oklch(0.2 0.055 218);
+  --hero-warm: oklch(0.29 0.07 183);
 }
 
 *,
@@ -97,6 +103,65 @@ body {
   color: var(--text-primary);
   font-family: "IBM Plex Sans Arabic", Arial, Helvetica, sans-serif;
   text-rendering: optimizeLegibility;
+}
+
+a,
+button,
+summary,
+select {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.hero-mesh {
+  background:
+    radial-gradient(circle at 78% 18%, color-mix(in oklch, var(--brand) 18%, transparent), transparent 32%),
+    radial-gradient(circle at 14% 38%, color-mix(in oklch, var(--accent) 14%, transparent), transparent 28%);
+}
+
+.hero-grid {
+  background-image:
+    linear-gradient(color-mix(in oklch, white 12%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in oklch, white 12%, transparent) 1px, transparent 1px);
+  background-size: 42px 42px;
+  mask-image: linear-gradient(to bottom, black, transparent 88%);
+}
+
+.hero-highlight {
+  width: fit-content;
+  background: linear-gradient(90deg, oklch(0.9 0.15 88), oklch(0.86 0.1 185));
+  background-clip: text;
+  color: transparent;
+}
+
+.section-kicker {
+  width: fit-content;
+  border: 1px solid color-mix(in oklch, var(--brand) 20%, transparent);
+  border-radius: 999px;
+  background: color-mix(in oklch, var(--brand) 8%, transparent);
+  padding: 0.45rem 0.8rem;
+  color: var(--brand);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.skeleton-block {
+  background: linear-gradient(
+    100deg,
+    var(--surface-muted) 22%,
+    color-mix(in oklch, var(--surface-raised) 78%, var(--brand) 22%) 42%,
+    var(--surface-muted) 62%
+  );
+  background-size: 220% 100%;
+  animation: skeleton-travel 1.8s ease-in-out infinite;
+}
+
+@keyframes skeleton-travel {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: -120% 0;
+  }
 }
 
 button,
@@ -126,5 +191,9 @@ select {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+
+  .skeleton-block {
+    background: var(--surface-muted);
   }
 }
