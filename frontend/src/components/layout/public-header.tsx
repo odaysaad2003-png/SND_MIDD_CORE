@@ -19,9 +19,13 @@ export function PublicHeader() {
 
                 <nav aria-label="التنقل العام" className="hidden items-center gap-1 md:flex">
                     <ActiveNavLink href="/">الرئيسية</ActiveNavLink>
-                    <ActiveNavLink href="/posts" match="prefix">المنشورات</ActiveNavLink>
+                    <ActiveNavLink href="/posts" match="prefix">
+                        المنشورات
+                    </ActiveNavLink>
                     <ActiveNavLink href="/#how-it-works">كيف يعمل سند؟</ActiveNavLink>
                     <ActiveNavLink href="/#trust-and-safety">الثقة والسلامة</ActiveNavLink>
+                    <ActiveNavLink href="/community-guidelines"> إرشادات </ActiveNavLink>
+                    <ActiveNavLink href="/privacy">مبادئ الخصوصية</ActiveNavLink>
                 </nav>
 
                 <div className="flex items-center gap-2">

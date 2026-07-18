@@ -14,9 +14,13 @@ export function PublicMobileNavigation() {
                 className="absolute end-0 top-[calc(100%+0.75rem)] z-50 grid min-w-56 gap-1 rounded-2xl border border-border bg-surface-raised p-2 shadow-2xl"
             >
                 <ActiveNavLink href="/">الرئيسية</ActiveNavLink>
-                <ActiveNavLink href="/posts" match="prefix">المنشورات العامة</ActiveNavLink>
+                <ActiveNavLink href="/posts" match="prefix">
+                    المنشورات العامة
+                </ActiveNavLink>
                 <ActiveNavLink href="/#how-it-works">كيف يعمل سند؟</ActiveNavLink>
                 <ActiveNavLink href="/#trust-and-safety">الثقة والسلامة</ActiveNavLink>
+                <ActiveNavLink href="/community-guidelines"> إرشادات </ActiveNavLink>
+                <ActiveNavLink href="/privacy">مبادئ الخصوصية</ActiveNavLink>
             </nav>
         </details>
     );
