@@ -34,7 +34,7 @@ export function LandingHero() {
                     className="relative z-10 grid max-w-3xl gap-6"
                     initial={reduceMotion ? false : {opacity: 0, y: 24}}
                     animate={{opacity: 1, y: 0}}
-                    transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
+                    transition={{duration: 0.9, ease: [0.32, 1, 0.36, 1]}}
                 >
                     <div className="inline-flex w-fit items-center gap-2 rounded-full border border-white/15 bg-white/8 px-3 py-2 text-xs font-semibold text-white/85 backdrop-blur">
                         <span className="relative flex size-2">

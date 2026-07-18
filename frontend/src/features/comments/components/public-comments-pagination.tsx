@@ -39,8 +39,7 @@ export function PublicCommentsPagination({meta, postId, state}: PublicCommentsPa
                 </Button>
             )}
 
-            <p className="text-sm text-muted-foreground">
-                الصفحة <span className="font-semibold text-foreground">{meta.page}</span> من{" "}
+            <p className="text-sm text-muted-foreground"> الصفحة <span className="font-semibold text-foreground">{meta.page}</span> من{" "}
                 <span className="font-semibold text-foreground">{meta.totalPages}</span>
             </p>
 
