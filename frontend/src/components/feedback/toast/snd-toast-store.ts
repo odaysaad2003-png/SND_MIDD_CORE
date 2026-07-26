@@ -51,6 +51,8 @@ const defaultDurations: Record<SndToastVariant, number> = {
     info: 5000,
 };
 
+// Keep the viewport bounded on narrow screens. Newer feedback replaces the
+// oldest visible item instead of allowing the stack to cover the interface.
 const maximumVisibleToasts = 4;
 
 let toastSequence = 0;

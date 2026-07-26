@@ -265,6 +265,7 @@ function ToastViewport() {
     return (
         <section
             aria-label="إشعارات سند"
+            aria-relevant="additions text"
             className={cn(
                 "pointer-events-none fixed inset-x-3 top-3 z-[120]",
                 "sm:inset-x-auto sm:start-5 sm:w-[min(26rem,calc(100vw-2.5rem))]"
