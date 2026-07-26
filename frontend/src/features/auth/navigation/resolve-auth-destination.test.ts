@@ -9,13 +9,17 @@ describe("resolveAuthDestination", () => {
         );
     });
 
+    it("keeps the approved private profile route", () => {
+        expect(resolveAuthDestination("/profile")).toBe("/profile");
+    });
+
     it.each([
         "https://evil.example/path",
         "//evil.example/path",
         "/\\evil.example/path",
         "/posts//evil",
         "/admin",
-        "/profile",
+        "/profile/settings",
         "\u0000/posts",
     ])("falls back for an unsafe or unsupported return target: %s", (returnTo) => {
         expect(resolveAuthDestination(returnTo)).toBe("/posts");
