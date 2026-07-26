@@ -2,7 +2,7 @@
 
 ## Status
 
-Approved V1 strategy as of 2026-07-13. The F1 test foundation was implemented on 2026-07-14 with Vitest, React Testing Library, user-event, jest-dom, and jsdom. The final F1 closure run must be reported by the owner after the synchronized code/document review; this file does not claim an unreported pass. MSW, Playwright, and automated axe coverage remain planned for the feature/integration layers that need them.
+Approved V1 strategy as of 2026-07-13. The F1 test foundation was implemented on 2026-07-14 with Vitest, React Testing Library, user-event, jest-dom, and jsdom. On 2026-07-26, the synchronized F3 candidate passed Lint, route generation/TypeScript, 66 Vitest tests across 10 files, and the production build. MSW, Playwright, automated axe, and the deployed browser Auth matrix remain open layers and are not claimed as passing.
 
 ## Objectives
 
@@ -32,6 +32,27 @@ Installed versions are recorded in `package-lock.json`. Do not claim the planned
 - disabled Button behavior, accessible Field relationships, blocking Feedback semantics, and Theme Toggle interaction.
 
 F1 has unit and component coverage only. It has no MSW integration suite, browser E2E runner, automated axe runner, or deployed-production verification.
+
+## F3 Implemented Coverage
+
+- Tokens stay outside the public Auth snapshot.
+- Concurrent callers share one in-tab refresh.
+- Missing in-memory CSRF performs bootstrap; refresh `403` performs one fresh-CSRF retry.
+- Final Auth failure clears local state; recoverable network failure does not.
+- Protected requests attach Bearer, remove CSRF/cookie credentials, reuse a newer token
+  after a stale `401`, refresh/retry once, clear after a second `401`, and never refresh
+  on `403`.
+- Register normalizes input and uses credentialed cookie transport.
+- CSRF, refresh, and logout request options match the verified backend contract.
+- Auth response validation rejects a leaked JSON `refreshToken`.
+- Safe `returnTo` rejects external, malformed, unsupported, and control-character targets.
+- Header Auth actions cover anonymous, checking, successful Logout, and remote Logout
+  failure behavior.
+- Toast tests cover ID-based update, the four-item bound, timed dismissal, and promise
+  tracking.
+
+These are unit/component contract tests. They do not replace a real browser checking
+cross-origin `Set-Cookie`, CORS preflight, reload recovery, or multi-tab rotation.
 
 ## Test Layers
 
