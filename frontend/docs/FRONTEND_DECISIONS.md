@@ -150,7 +150,7 @@ This file records durable frontend Architecture Decision Records. `Accepted` mea
 
 **Status:** Accepted
 **Decision:** Close F1 with the dependencies used by implemented behavior. Add React Hook Form with the first real form and add Framer Motion only when a purposeful motion requirement exists. Use SND-owned shadcn-style primitives rather than adding a runtime shadcn package.
-**Consequence:** The foundation avoids unused production dependencies while keeping approved ownership boundaries. Any later addition must include its consuming feature and verification in the same sprint.
+**Consequence:** The foundation avoided unused production dependencies. `motion` was added with the F2 landing consumer, and React Hook Form plus its Zod resolver were added with the F3 Login/Register forms. Future dependencies still require a concrete consumer and verification in the same sprint.
 
 ## FADR-026 — Shared API Client Stops at HTTP Infrastructure
 
@@ -175,3 +175,9 @@ This file records durable frontend Architecture Decision Records. `Accepted` mea
 **Status:** Accepted, compatibility boundary  
 **Decision:** Match the actual Post transport shape `images: string[]`, but render only verified HTTPS images from the configured Cloudinary host. Relative legacy `/uploads` values remain data debt and are not converted into frontend URLs.
 **Consequence:** One obsolete media reference no longer hides every post in a paginated response. The text post remains readable, while broken or unapproved image origins never reach `next/image`.
+
+## FADR-030 — SND-Owned Toast External Store
+
+**Status:** Accepted  
+**Decision:** Use a small SND-owned external Toast store and one portal Provider instead of adding a second notification dependency. The store supports typed variants, ID-based update, promise tracking, action, dismiss/clear, bounded visible items, timers, and `useSyncExternalStore`.
+**Consequence:** Toast remains supplementary to inline form/page feedback. It must preserve RTL, dark mode, reduced motion, keyboard access, and live-region semantics. Auth error actions must not keep password values alive in global Toast callbacks; credential retries remain inside the mounted form.

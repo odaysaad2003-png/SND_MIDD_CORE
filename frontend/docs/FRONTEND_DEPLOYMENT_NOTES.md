@@ -2,7 +2,7 @@
 
 ## Status
 
-Approved deployment baseline for a Vercel frontend using the existing Render backend. The final Vercel production URL will be obtained after the first successful deployment, so production integration is not yet considered verified.
+Approved deployment baseline for a Vercel frontend using the existing Render backend. The F3 candidate passed local static/unit/build gates on 2026-07-26. Production Auth integration remains unverified until the exact active Vercel production origin is synchronized to Render and the browser smoke matrix is recorded.
 
 ## Topology
 
@@ -26,22 +26,54 @@ The refresh cookie is host-only for the Render API and scoped to `/api/v1/auth`.
 - Require a successful production build before promotion.
 - Keep framework defaults unless a measured requirement justifies overrides.
 
+### Exact Vercel F3 Check
+
+1. Open the Vercel project, then **Settings → Build and Deployment**.
+2. Confirm:
+   - Framework Preset: Next.js;
+   - Root Directory: `frontend`;
+   - Install/Build commands: framework defaults, which use the checked-in lockfile and
+     `npm run build`;
+   - Production Branch: the branch actually pushed for release.
+3. Open **Settings → Environment Variables**.
+4. Set `NEXT_PUBLIC_API_BASE_URL` for **Production** to:
+
+   ```text
+   https://snd-community-core-api.onrender.com/api/v1
+   ```
+
+5. Add the same value to Preview only when the exact stable Preview origin is intentionally
+   included in Render CORS.
+6. Save, then create a new Production deployment. An existing deployment does not receive
+   a later environment-variable edit.
+7. Copy the resulting stable production Origin, for example
+   `https://your-project.vercel.app`. Do not copy a page path.
+
+Reference:
+[Vercel environment variables](https://vercel.com/docs/environment-variables) and
+[Vercel Git deployments](https://vercel.com/docs/git).
+
 ## Frontend Environment Variables
 
 Expected public variables:
 
 ```text
 NEXT_PUBLIC_API_BASE_URL=https://snd-community-core-api.onrender.com/api/v1
-NEXT_PUBLIC_SITE_URL=https://<final-frontend-domain>
 ```
 
 Rules:
 
-- Validate both as absolute HTTPS URLs in production.
+- `NEXT_PUBLIC_API_BASE_URL` is required by the current build, must be absolute HTTPS in
+  production, and must end exactly in `/api/v1`.
+- `NEXT_PUBLIC_SITE_URL` is not consumed by the current F3 code. Add and validate it with
+  the F7 canonical/metadata implementation rather than documenting an unused required
+  variable.
 - Do not put JWT secrets, refresh secrets, MongoDB credentials, Cloudinary API secrets, or backend-only settings in Vercel.
 - `NEXT_PUBLIC_*` values are intentionally visible to browsers.
 - Cloudinary display URLs come from the API; the frontend does not need Cloudinary API credentials.
 - Use environment-specific values for Development, Preview, and Production.
+- Vercel environment-variable edits affect only new deployments. Redeploy after every
+  relevant change.
 
 ## Render Configuration Required for Frontend
 
@@ -57,7 +89,47 @@ CORS_ORIGIN=https://<exact-production-frontend-origin>
 
 `CORS_ORIGIN` may be an explicit comma-separated allowlist as supported by the backend. Never use `*` with credentials.
 
-The user confirmed the current cookie settings are already aligned; the remaining step is the exact Vercel origin and deployed browser verification.
+Use the origin only: for example `https://example.vercel.app`, with no route, query, or
+trailing path. Keep `AUTH_COOKIE_DOMAIN` absent/unset for the host-only Render cookie.
+After changing Render variables, save them and deploy/restart the service before testing.
+
+### Exact Render F3 Check
+
+1. Open the Render backend Web Service.
+2. Under **Settings**, confirm:
+   - Root Directory: `backend` when the Git repository is a monorepo;
+   - Build Command: `npm ci && npm run build`;
+   - Start Command: `npm start`;
+   - Health Check Path: `/api/v1/health`;
+   - Auto-Deploy targets the intended Git branch/commit.
+3. Under **Environment**, keep the existing MongoDB, JWT, refresh-secret, hashing, and
+   Cloudinary secrets. Do not copy any of them to Vercel.
+4. Confirm the complete safe name list in `backend/.env.example`, then set the
+   Auth-critical production values from the table below.
+5. Do not hardcode `PORT`; Render supplies it to the service.
+6. Keep `JWT_SECRET` and `REFRESH_TOKEN_SECRET` different. Changing either intentionally
+   invalidates issued tokens/sessions.
+7. Save the environment and deploy the latest commit. Wait for a healthy
+   `/api/v1/health` response before testing the frontend.
+
+Reference:
+[Render environment variables](https://render.com/docs/configure-environment-variables),
+[Render web services](https://render.com/docs/web-services), and
+[Render deploys](https://render.com/docs/deploys).
+
+### F3 Environment Synchronization
+
+| Platform | Key | Required value/policy |
+|---|---|---|
+| Vercel | `NEXT_PUBLIC_API_BASE_URL` | Exact Render API base ending `/api/v1` |
+| Vercel | Environment scope | Production; Preview only when its exact stable origin is also intentionally allowlisted |
+| Render | `NODE_ENV` | `production` |
+| Render | `AUTH_COOKIE_SECURE` | `true` |
+| Render | `AUTH_COOKIE_SAME_SITE` | `none` for Vercel ↔ Render cross-site Auth |
+| Render | `AUTH_COOKIE_DOMAIN` | Unset |
+| Render | `AUTH_REFRESH_COOKIE_NAME` | Keep the deployed value stable; default is `snd_refresh` |
+| Render | `CORS_ORIGIN` | Exact Vercel production origin; comma-separated explicit origins only when needed |
+| Render | `TRUST_PROXY_HOPS` | Keep the currently verified numeric value; do not guess a hop count. It governs client-IP/rate-limit trust, not the explicit cookie `Secure` flag |
 
 ## Cross-Origin Request Rules
 
@@ -100,13 +172,53 @@ Do not implement permissive origin reflection or wildcard credentialed CORS mere
 Before deployment, the frontend must pass the scripts defined in its actual `package.json`, at minimum:
 
 ```text
-lint
-typecheck
-test
-build
+npm run lint
+npm run type
+npm test
+npm run build
 ```
 
 The build should fail clearly for missing/invalid required environment variables. No build should require access to private backend secrets.
+
+## F3 Browser Auth Verification Matrix
+
+Before starting, clear old site data for both the Vercel frontend and Render API, open
+DevTools, enable **Network → Preserve log**, and keep **Application → Cookies → Render
+origin** visible.
+
+| Case | Action | Blocking expected evidence |
+|---|---|---|
+| Register | Create one controlled test account | `POST /auth/register` is `201`; JSON has `user`, `accessToken`, `csrfToken` and no `refreshToken`; Render cookie is HttpOnly, Secure, SameSite=None, Path `/api/v1/auth`, and host-only |
+| Login | Log out, then log in with the account | `POST /auth/login` is `200`; Header switches to user state; no token enters Local/Session Storage |
+| Reload | Hard reload while logged in | `GET /auth/csrf` then `POST /auth/refresh` succeed once; session remains authenticated; no loop |
+| Protected retry | Allow an access token to expire, then trigger a future protected request | one refresh and one original-request retry only; a `403` never starts refresh |
+| Invalid CSRF | Send Refresh with an invalid `X-CSRF-Token` | `403`; no new authenticated session is accepted |
+| Missing cookie | Delete the Render refresh cookie and reload | CSRF/bootstrap receives `401`; UI settles anonymous without a loop |
+| Logout | Log in and choose Logout | local UI/cache clear immediately; `POST /auth/logout` succeeds and cookie disappears |
+| Disallowed Origin | Run preflight from an origin not in the allowlist | no approved CORS response; never reflect arbitrary Origin |
+| Session replacement | Log in to the same account in another isolated browser | older single-session refresh is rejected and settles cleanly |
+| Multi-tab | Reload two tabs around the same time | record the current single-session/rotation behavior; no endless refresh storm |
+
+To exercise the invalid-CSRF case from the authenticated frontend's browser console:
+
+```js
+await fetch(
+  "https://snd-community-core-api.onrender.com/api/v1/auth/refresh",
+  {
+    method: "POST",
+    credentials: "include",
+    headers: {"X-CSRF-Token": "invalid"},
+  }
+).then(async (response) => ({
+  status: response.status,
+  body: await response.json(),
+}));
+```
+
+Do not paste or print real tokens. A browser privacy policy may still block cross-site
+cookies despite correct `SameSite=None; Secure`; if so, record the browser/policy and use
+same-site custom frontend/API subdomains as the durable topology rather than weakening
+CORS or cookie security.
 
 ## Image Configuration
 
@@ -118,6 +230,9 @@ The build should fail clearly for missing/invalid required environment variables
 
 ## Security and Privacy Checks
 
+- Keep Next.js at `16.2.12` or a later verified patch. Current residual audit findings are
+  transitive PostCSS/Sharp versions pinned by Next.js; track the upstream patch instead of
+  forcing an incompatible framework downgrade/override.
 - Inspect the generated client bundle/environment output for secrets.
 - Confirm no access/CSRF token is written to browser storage, logs, analytics, URLs, or error reports.
 - Confirm the refresh token is absent from JSON and inaccessible to JavaScript.
@@ -192,13 +307,14 @@ Track repeated auth bootstrap failures, API 5xx, upload failure rate, and major 
 ## Release Procedure
 
 1. Freeze and identify the frontend/backend commits being released.
-2. Run CI and the controlled staging E2E suite.
-3. Verify Render health/readiness and required environment configuration.
-4. Add/confirm the final Vercel origin in Render CORS.
-5. Deploy Vercel production.
-6. Run the narrow production smoke suite with controlled accounts/content.
-7. Monitor errors, auth failures, latency, and Web Vitals.
-8. Record release outcome and any accepted limitations.
+2. Run the local/CI quality gates.
+3. Configure Vercel's API base and create the production deployment.
+4. Copy the exact stable Vercel Origin into Render `CORS_ORIGIN`.
+5. Confirm Render cookie variables and redeploy the latest backend commit.
+6. Redeploy Vercel after any frontend environment edit.
+7. Run the F3 browser Auth matrix with controlled accounts/content.
+8. Monitor errors, auth failures, latency, and Web Vitals.
+9. Record release outcome and any accepted limitations.
 
 ## Rollback
 
@@ -210,9 +326,12 @@ Track repeated auth bootstrap failures, API 5xx, upload failure rate, and major 
 
 ## Known Release Blockers
 
-1. Final Vercel production domain is not yet known/allowlisted.
-2. Feed Like/Save uses accepted lazy visible-card status calls; F6 measurement may still require a future protected batch contract.
-3. Final policy/landing copy and production imagery are not approved; Calm Contemporary and the F1 token direction are approved.
-4. F2–F7 feature implementation, browser E2E, deployed accessibility/performance checks, and production smoke verification do not yet exist.
+1. The exact active Vercel production origin has not yet been recorded and verified against Render `CORS_ORIGIN`.
+2. Current Next.js has no safe compatible automated resolution for its pinned
+   PostCSS/Sharp audit findings; the present input boundaries reduce applicability, but the
+   upstream patch must be tracked.
+3. Feed Like/Save uses accepted lazy visible-card status calls; F6 measurement may still require a future protected batch contract.
+4. Final policy/landing copy and production imagery are not approved; Calm Contemporary and the F1 token direction are approved.
+5. F4–F7 feature implementation, browser E2E, deployed accessibility/performance checks, and the F3 production Auth smoke evidence do not yet exist.
 
-The F1 foundation reduces setup risk but does not make V1 production-ready; the remaining blockers belong to their planned feature and deployment sprints.
+The verified F3 candidate is ready for deployment testing, but it is not the complete V1 release.

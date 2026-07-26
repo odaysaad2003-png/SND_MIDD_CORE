@@ -1,5 +1,13 @@
 # SND Frontend Authentication Contract
 
+## Implementation Status
+
+The contract below was revalidated against the current backend route, middleware,
+controller, service, cookie, CORS, and environment code on 2026-07-26. The frontend
+implementation and automated static/unit gates pass. Final status remains
+`production verification pending` until the exact Vercel origin completes the deployed
+cookie/CORS browser matrix.
+
 ## Approved Position
 
 - Access tokens are short-lived Bearer tokens returned in JSON.
@@ -134,6 +142,11 @@ The backend revokes the matching stored session when possible and clears the coo
 
 Local cleanup occurs even if the logout request fails.
 
+The current Header exposes this flow. While remote Logout is pending, Login actions remain
+blocked to avoid a new Login racing an older cookie-clearing response. If remote cleanup
+fails, local state stays anonymous and a persistent warning explains that server revocation
+was not confirmed.
+
 ## Route Protection
 
 Client route guards improve UX but are not authorization. Protected layouts wait for bootstrap before deciding among:
@@ -144,6 +157,10 @@ Client route guards improve UX but are not authorization. Protected layouts wait
 - show a recoverable network state without incorrectly logging out.
 
 Only internal relative return paths are allowed. Admin role checks in a future frontend are also UX gates; the backend remains authoritative and revalidates sensitive admin state from MongoDB.
+
+The current allowlist includes the landing page, public feed/detail, Privacy, and Community
+Guidelines. Add future protected destinations only when their real routes exist; do not
+accept arbitrary internal paths merely because they begin with `/`.
 
 ## Server/Client Responsibilities
 
@@ -208,4 +225,9 @@ Tabs share the refresh cookie but not in-memory tokens. Test concurrent tab boot
 
 ## Open Deployment Item
 
-The final Vercel production origin is still TBD. Authentication is not production-verified until that exact origin is allowlisted and the full cookie/CSRF flow passes in the deployed browser environment.
+Copy the exact canonical origin from the active Vercel production deployment and place that
+origin—scheme and hostname, with no path—in Render `CORS_ORIGIN`. Authentication is not
+production-verified until the full cookie/CSRF flow passes from that origin in a real browser.
+Changing a Vercel environment variable requires a new Vercel deployment; changing Render
+Auth/CORS variables requires the affected backend service to redeploy/restart with the new
+configuration.

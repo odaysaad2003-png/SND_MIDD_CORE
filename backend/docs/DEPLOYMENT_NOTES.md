@@ -4,12 +4,12 @@
 
 Deployment constraints are architectural requirements, not Sprint 9 cleanup. The backend
 already uses MongoDB Atlas, environment validation, Cloudinary, CORS, Helmet, health checks,
-request IDs, and rate limiting. Actual production deployment and verification remain
-pending.
+request IDs, rate limiting, and an HttpOnly refresh-cookie/CSRF browser contract. The
+remaining Auth task is deployed-browser verification against the exact frontend origin.
 
 ## Service Separation
 
-The future frontend and backend deploy independently:
+The frontend and backend deploy independently:
 
 ```text
 https://snd.example        → frontend
@@ -26,13 +26,23 @@ The exact schema in `src/config/env.ts` is authoritative. The current expected s
 ```text
 NODE_ENV
 PORT
+TRUST_PROXY_HOPS
+SHUTDOWN_TIMEOUT_MS
 MONGODB_URI
+MONGODB_SERVER_SELECTION_TIMEOUT_MS
+MONGODB_MAX_POOL_SIZE
+MONGOOSE_AUTO_INDEX
 JWT_SECRET
 JWT_EXPIRES_IN
 REFRESH_TOKEN_SECRET
 REFRESH_TOKEN_EXPIRES_IN
+AUTH_REFRESH_COOKIE_NAME
+AUTH_COOKIE_SECURE
+AUTH_COOKIE_SAME_SITE
+AUTH_COOKIE_DOMAIN
 BCRYPT_SALT_ROUNDS
 CORS_ORIGIN
+CORS_MAX_AGE_SECONDS
 CLOUDINARY_CLOUD_NAME
 CLOUDINARY_API_KEY
 CLOUDINARY_API_SECRET
@@ -45,6 +55,11 @@ Rules:
 - Never commit `.env`.
 - Keep `.env.example` synchronized with names and safe placeholders only.
 - Use separate credentials and database users for development, staging, and production.
+- Leave `AUTH_COOKIE_DOMAIN` unset for the current host-only Render cookie.
+- For the current Vercel ↔ Render topology, set `AUTH_COOKIE_SECURE=true` and
+  `AUTH_COOKIE_SAME_SITE=none`.
+- Set `CORS_ORIGIN` to exact browser origins with no path. Separate multiple explicitly
+  approved origins with commas.
 
 ## Build and Start Contract
 
@@ -89,20 +104,25 @@ as durable production storage.
 - `CORS_ORIGIN` must match the actual allowed frontend origin(s).
 - Never use wildcard origin with credentials.
 - Test preflight requests after middleware or deployment changes.
-- If multiple origins become necessary, parse and validate an explicit allowlist rather
-than accepting arbitrary origins.
+- Multiple origins are parsed as a normalized, explicit comma-separated allowlist.
+- Preview deployments must not be assumed to work: allowlist a stable Preview origin only
+  when it is intentionally used for Auth testing.
 
 ## Cookies and Browser Auth
 
-Current refresh-token transport is JSON and is not ready for a production browser.
-The future cookie deployment must verify:
+Current refresh-token transport is a host-only HttpOnly cookie scoped to
+`/api/v1/auth`. Register, Login, and Refresh never return the raw refresh token in JSON.
+The deployed browser must verify:
 
 - `HttpOnly: true`
 - `Secure: true` in production
-- correct `SameSite` for same-site or cross-site topology
-- `credentials: true` on both CORS and client requests where needed
-- CSRF strategy for state-changing cookie-authenticated requests
-- cookie domain/path/expiry and logout clearing behavior
+- `SameSite=None` for the current cross-site topology
+- no explicit Domain unless the hosting topology changes
+- `Path=/api/v1/auth`
+- credentialed CORS and credentialed frontend Auth requests
+- `GET /auth/csrf` bootstrap plus `X-CSRF-Token` on Refresh/Logout
+- rotation, expiry, and Logout clearing with matching cookie options
+- no refresh token in any JSON response, browser storage, log, or URL
 
 ## Reverse Proxy and Rate Limiting
 
@@ -140,13 +160,15 @@ where appropriate.
 
 ## Deployment Order
 
-1. Verify typecheck/build/tests locally.
-2. Provision production MongoDB and Cloudinary configuration.
-3. Deploy backend with production env vars.
-4. Verify health, logs, CORS, upload, auth, and database behavior.
-5. Run a minimal production smoke suite.
-6. Deploy/connect the frontend only after the backend contract is verified.
-7. Monitor and keep a rollback path.
+1. Verify backend typecheck/build and frontend lint/typecheck/tests/build locally.
+2. Confirm the frontend production API base URL and backend production secrets.
+3. Deploy the frontend and copy its exact stable production Origin.
+4. Set that Origin in backend `CORS_ORIGIN`; confirm production cookie variables.
+5. Redeploy the backend so the new environment is loaded.
+6. Redeploy the frontend after any frontend environment-variable change.
+7. Run the browser Auth matrix with DevTools open.
+8. Mark frontend Sprint 3 complete only after that evidence passes.
+9. Monitor and keep a rollback path.
 
 ## Production Smoke Checklist
 
@@ -157,7 +179,13 @@ where appropriate.
 - [ ] CORS succeeds only for approved origins.
 - [ ] Helmet/security headers are present.
 - [ ] Rate limiting observes real client IP behavior.
-- [ ] Register/login/refresh/logout work under the deployed URL.
+- [ ] Register/Login responses contain access + CSRF data but no refresh token.
+- [ ] Refresh survives a full reload through CSRF bootstrap and rotates the cookie.
+- [ ] Refresh/Logout reject missing or invalid CSRF with `403`.
+- [ ] Missing/invalid refresh sessions return `401` without an infinite retry loop.
+- [ ] Logout clears the cookie and the frontend's in-memory/private cached state.
+- [ ] An unapproved browser Origin is rejected.
+- [ ] Cookie attributes match the production contract in browser DevTools.
 - [ ] Avatar and post-image upload/delete work through Cloudinary.
 - [ ] Protected routes reject no-auth/wrong-role requests.
 - [ ] Report/admin routes do not leak to normal users.

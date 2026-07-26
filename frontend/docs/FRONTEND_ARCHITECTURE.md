@@ -2,7 +2,7 @@
 
 ## Status and Constraints
 
-This architecture baseline was approved on 2026-07-13 and its F1 foundation was implemented on 2026-07-14. The current code establishes App Router, Arabic/RTL rendering, providers, semantic UI primitives, environment validation, and the shared HTTP boundary. Feature/auth layers remain planned and must follow the current backend contract, in-memory access tokens, the cross-origin HttpOnly refresh cookie, and mobile-first performance constraints.
+This architecture baseline was approved on 2026-07-13, its F1 foundation was implemented on 2026-07-14, and its F3 Auth/session boundary was revalidated against current frontend/backend code on 2026-07-26. The current code establishes App Router, Arabic/RTL rendering, providers, semantic UI primitives, environment validation, shared HTTP transport, cookie/CSRF session recovery, protected Bearer transport, Login/Register forms, Header Auth actions, and the SND Toast provider.
 
 ## Technology Baseline
 
@@ -11,8 +11,8 @@ This architecture baseline was approved on 2026-07-13 and its F1 foundation was 
 - Tailwind CSS
 - SND-owned shadcn-style accessible primitives adapted to the SND visual system
 - TanStack Query for server state
-- Zod for runtime validation; React Hook Form begins with the first real form
-- Purposeful client-side motion only when a measured requirement justifies adding a library
+- Zod for runtime validation and React Hook Form for the implemented Auth forms
+- Purposeful client-side motion through the scoped `motion` dependency
 - next-themes for theme selection
 - Lucide icons
 
@@ -89,6 +89,8 @@ Protected data loads in Client Components after auth bootstrap because:
 - Next middleware cannot reliably establish the backend session.
 
 Protected layouts show a session-resolution skeleton, then render, redirect to login, or display an account-state error. Backend authorization remains the security boundary; client guards are UX only.
+
+The F3 archive contains the protected request/session infrastructure but no invented placeholder protected page. The first real protected layout consumer is introduced with F4 Profile/current-user content.
 
 ## Server and Client Component Boundaries
 
@@ -205,9 +207,14 @@ Disable duplicate submissions, focus the first invalid field, connect errors thr
 | Access/CSRF token and auth bootstrap | Auth provider in memory |
 | Theme | next-themes |
 | Temporary modal/menu state | Local component state |
-| Toast queue | Small UI provider if required |
+| Toast notifications | SND external store plus one portal Provider |
 
 No global client store is currently justified.
+
+The public Header remains a Server Component and embeds only `AuthHeaderActions` as a focused
+Client island. It waits while bootstrap is unresolved, exposes Login/Register to guests, and
+provides local-first Logout to authenticated users without moving the whole public layout to
+the client.
 
 ## Error Handling
 

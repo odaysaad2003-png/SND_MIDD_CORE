@@ -225,9 +225,42 @@ The owner approved Calm Contemporary, IBM Plex Sans Arabic, the semantic token d
 
 The detailed line-by-line mechanics of `setup.ts` and the F1 test files were intentionally postponed at the learner's request. Keep this visible and return to it before test complexity expands; do not confuse passing tests with understanding why isolation, stubs, dynamic imports, DOM cleanup, and assertions work.
 
+### F3 Authentication and Session Track — Engineering Review Complete on 2026-07-26
+
+The learner's Auth lecture/review sequence covered:
+
+- `auth-session-store.ts` as the RAM owner and `useSyncExternalStore` as the React bridge;
+- why the public snapshot exposes `status/user` while access/CSRF tokens stay outside it;
+- `refresh-auth-session.ts` single-flight behavior, `AbortController`, generation guards,
+  stale Login/Logout races, and one fresh-CSRF retry;
+- `AuthProvider` bootstrap/Login/Register/Logout ownership and why it sits under
+  `QueryProvider`;
+- `authorizedApiRequest` Bearer attachment, `401` refresh/retry once, and why `403` does
+  not trigger refresh;
+- the browser-owned HttpOnly cookie boundary and why reload loses RAM tokens but retains
+  the refresh session;
+- Toast as supplementary UI state, not the owner of form errors or credentials.
+
+Corrections retained:
+
+- `setSession` stores the in-memory tokens; `useSyncExternalStore` does not store them.
+- Local Logout and remote cookie revocation are separate outcomes.
+- A test that forgot the implemented `AbortSignal` was stale; removing cancellation from
+  production code would have been the wrong fix.
+- React Strict Mode can run Effect setup/cleanup twice in development, so mounted refs
+  must be reset in Effect setup.
+- A global Toast action must not retain a password through a retry closure.
+
+The engineering gates pass. The final learning evidence for F3 is observing the deployed
+Network/Application panels and explaining the Cookie/CORS/CSRF flow using the actual
+Vercel and Render origins.
+
 ### Next Lesson
 
-Study the F2 implementation candidate in this order: public Query Options factory → request-scoped server prefetch → dehydrated `HydrationBoundary` → client `useQuery` states/refetch → shared API/schema boundary. Explain why URL parameters still own search/sort/page, why one legacy media string previously rejected all ten posts, and why filtering unsupported media at the renderer is different from silently changing backend data. Then review the scoped Motion island and reduced-motion path. Do not pull F3 Authorization, CSRF, or refresh coordination into F2.
+Run and explain the deployed F3 Auth matrix from Browser DevTools: preflight → Register/Login
+response → host-only HttpOnly cookie → reload CSRF bootstrap → refresh rotation → Bearer
+request → Logout clearing. After recording that evidence, begin F4 with the private
+`GET /users/me` Profile query as the first real protected-page consumer.
 
 ## Learning Log Rule
 

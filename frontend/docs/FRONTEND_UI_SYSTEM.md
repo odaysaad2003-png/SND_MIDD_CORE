@@ -2,7 +2,7 @@
 
 ## Status
 
-The UI-system structure was approved on 2026-07-13. Calm Contemporary, IBM Plex Sans Arabic, and the F1 semantic light/dark token direction were approved and implemented on 2026-07-14. The F2 landing/header/footer/loading revision is an implementation candidate awaiting owner browser verification; final production photography remains future work.
+The UI-system structure was approved on 2026-07-13. Calm Contemporary, IBM Plex Sans Arabic, and the F1 semantic light/dark token direction were approved and implemented on 2026-07-14. The F2 public revision and F3 Auth/Toast surfaces are implemented. Final deployed mobile/accessibility review and production photography remain open.
 
 ## Brand Boundary
 
@@ -129,6 +129,14 @@ Use accessible focus management, Escape handling, labelled titles, and focus ret
 ### Feedback
 
 Inline feedback stays near the action. Toasts are supplementary and never the only place for destructive, validation, or upload information.
+
+The implemented SND Toast system uses one portal viewport and a small external store. It
+supports loading, success, error, warning, and info; ID-based loading-to-result updates;
+promise tracking; optional actions; dismiss/clear; timed progress; and a maximum of four
+visible items. It uses semantic theme tokens, logical RTL positioning, mobile-safe width,
+keyboard-operable actions, polite/assertive roles by severity, and reduced-motion behavior.
+Do not place passwords, tokens, or other sensitive values inside Toast content or long-lived
+action closures.
 
 ## Post Media
 

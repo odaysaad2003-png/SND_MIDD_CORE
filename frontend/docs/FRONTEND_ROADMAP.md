@@ -8,10 +8,10 @@
 |---|---|---|
 | F0 | Documentation and verified contracts | Complete and approved |
 | F0.5 | Contract decisions without backend changes | Complete and approved |
-| F1 | Frontend foundation and visual direction | Closure verification — implementation/docs synchronized |
-| F2 | Landing page and public discovery | Implementation candidate — verification and learning gates open |
-| F3 | Authentication and session | Proposed |
-| F4 | Profiles and current-user content | Proposed |
+| F1 | Frontend foundation and visual direction | Complete |
+| F2 | Landing page and public discovery | Complete; preserved in deployment smoke |
+| F3 | Authentication and session | Engineering verified 2026-07-26; deployed browser gate open |
+| F4 | Profiles and current-user content | Next after F3 production gate |
 | F5 | Post creation, editing, and images | Proposed |
 | F6 | Comments, likes, saves, and reporting | Proposed |
 | F7 | SEO, accessibility, performance, and policy quality | Proposed |
@@ -197,6 +197,10 @@ F1 foundation. Final landing copy and production imagery require owner approval 
 
 ## Sprint F3 — Authentication and Session
 
+**Current status:** The implementation, Lint, route generation/TypeScript, 66 unit/component
+tests, and production build pass as of 2026-07-26. F3 remains production-verification
+pending until the exact Vercel origin passes the Render cookie/CORS browser matrix.
+
 ### Goal
 
 Provide secure browser authentication with reliable cross-origin session recovery.
@@ -224,7 +228,10 @@ HttpOnly cookies, CSRF, CORS credentials, access/refresh separation, client rout
 
 ### Deliverables
 
-Complete auth/session feature and protected layout shell.
+Complete Auth/session infrastructure, Login/Register forms, safe Auth-route return behavior,
+Header account/Logout actions, protected Bearer request client, private Query cleanup, and
+the SND Toast feedback system. The first real protected page/layout consumer remains F4;
+F3 does not create a fake protected route only to exercise the guard.
 
 ### Verification
 
@@ -232,7 +239,9 @@ Register/login/reload/refresh/logout, access expiry, invalid CSRF, missing cooki
 
 ### Definition of Done
 
-No token is persisted in browser storage; deployed-style cross-origin session behavior passes automated and manual browser tests without refresh loops.
+No token is persisted in browser storage; local static/unit/build gates pass; deployed
+cross-origin Register/Login/reload/refresh/logout behavior passes the documented manual
+browser matrix without refresh loops.
 
 ### Dependencies
 
@@ -469,6 +478,6 @@ This sprint is intentionally not detailed or approved. Its roadmap must be creat
 1. F0 documents and this roadmap are approved.
 2. The displayed product name is سند/SND; the tagline remains intentionally open.
 3. F1 may start with visual exploration, but final tokens require owner approval.
-4. F4 cannot complete without the public-profile backend contract.
+4. F4 covers only the private current-user Profile and My Posts contract. Public Profile remains deferred and does not block F4.
 5. F6 cannot complete without an accepted Like/Save viewer-state performance decision.
-6. F3/F8 production auth cannot complete until the exact Vercel origin is known and allowlisted after deployment.
+6. F3 production Auth cannot complete until the exact Vercel origin is allowlisted and the browser matrix passes; F8 repeats the full release smoke suite.

@@ -47,7 +47,7 @@ payloads never define owner, author, reporter, user, role, or admin state.
 
 ## ADR-007 — Interim Refresh Token Transport
 
-**Status:** Accepted, temporary  
+**Status:** Superseded by ADR-025  
 **Decision:** During backend/Postman development, refresh tokens are accepted and returned
 in JSON. They are rotated and stored hashed.  
 **Exit condition:** Before production browser integration, migrate refresh tokens to an
@@ -178,9 +178,23 @@ mix review records with content-visibility state prematurely.
 
 ## ADR-024 — Admin Dashboard Is a Non-Transactional Operational Snapshot
 
-**Status:** Proposed, pending Sprint 7D manual verification  
+**Status:** Accepted after Sprint 7D manual verification  
 **Decision:** The admin dashboard uses separate typed domain aggregations/counts executed
 concurrently after current-admin revalidation. It does not use a cross-domain transaction.  
 **Reason:** Dashboard figures are operational telemetry, not a financial ledger or a
 cross-document write invariant. Small natural read-time skew is acceptable and avoids an
 expensive, unnecessary transaction boundary.
+
+## ADR-025 — Browser Refresh Cookie with CSRF
+
+**Status:** Accepted and implemented  
+**Decision:** Refresh tokens are transported only through a host-only HttpOnly cookie scoped
+to `/api/v1/auth`. Register/Login/Refresh set the cookie and remove the raw refresh token
+from JSON. CSRF bootstrap requires the cookie; Refresh/Logout require both the cookie and
+matching `X-CSRF-Token`. CORS accepts only normalized configured origins and enables
+credentials.
+**Consequence:** Browser Auth requests use credentials, while ordinary protected feature
+requests use the in-memory Bearer access token without refresh-cookie credentials.
+Production uses `Secure=true` and `SameSite=None` for the current Vercel ↔ Render cross-site
+topology, with no shared cookie Domain. Postman/API clients must use a cookie jar plus the
+CSRF header instead of a JSON refresh-token body.
