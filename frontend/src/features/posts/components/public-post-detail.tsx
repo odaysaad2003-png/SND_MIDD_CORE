@@ -82,6 +82,7 @@ export function PublicPostDetail({post}: PublicPostDetailProps) {
             <CardFooter>
                 <PostInteractionActions
                     postId={post.id}
+                    authorId={post.author.id}
                     initialLikesCount={post.likesCount}
                     variant="detail"
                 />

@@ -1,6 +1,6 @@
 "use client";
 
-import {ChevronDown, FileText, LoaderCircle, LogIn, LogOut, Newspaper, RotateCcw, Settings2, SquarePen, UserRoundPlus} from "lucide-react";
+import {Bookmark, ChevronDown, FileText, LoaderCircle, LogIn, LogOut, Newspaper, RotateCcw, Settings2, SquarePen, UserRoundPlus} from "lucide-react";
 import Link from "next/link";
 import {useEffect, useId, useRef, useState} from "react";
 
@@ -225,6 +225,23 @@ function AccountMenu({user, logout}: AccountMenuProps) {
                                     <span className="font-semibold text-foreground">منشوراتي</span>
                                     <span className="text-xs leading-5 text-muted-foreground">
                                         تعديل منشوراتك وصورها أو حذفها
+                                    </span>
+                                </span>
+                            </Link>
+
+                            <Link
+                                href="/saved"
+                                onClick={closeMenu}
+                                className="flex min-h-14 items-center gap-3 rounded-2xl px-3 py-2.5 transition-colors hover:bg-surface-muted"
+                            >
+                                <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-accent/15 text-foreground">
+                                    <Bookmark aria-hidden="true" className="size-5" />
+                                </span>
+
+                                <span className="grid min-w-0">
+                                    <span className="font-semibold text-foreground">المحفوظات</span>
+                                    <span className="text-xs leading-5 text-muted-foreground">
+                                        ارجع إلى المنشورات التي حفظتها
                                     </span>
                                 </span>
                             </Link>

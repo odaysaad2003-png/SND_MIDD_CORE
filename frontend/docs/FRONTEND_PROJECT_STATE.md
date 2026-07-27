@@ -6,9 +6,10 @@
 - Primary audience: residents of Gaza
 - Frontend: Next.js App Router, React, TypeScript strict, Tailwind CSS, Arabic/RTL-first
 - Backend: SND Community Core API on Render
-- Current milestone: Sprint F3 Auth/session engineering candidate
+- Current milestone: Sprint F6 interaction-layer engineering candidate
 - Snapshot date: 2026-07-26
-- Exact next action: deploy this candidate, synchronize the exact Vercel origin with Render CORS/cookie variables, then run the live browser Auth matrix
+- Exact next action: apply Sprint 6 Batch 3, run lint/type/test/build, then execute the
+  interaction browser/network matrix before deployment closure
 
 This file records verified current behavior. Older F1/F2 implementation detail remains in
 Git history and the durable architecture/decision documents rather than being repeated as

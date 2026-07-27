@@ -158,6 +158,12 @@ describe("AuthHeaderActions", () => {
 
         expect(
             screen.getByRole("link", {
+                name: /المحفوظات/,
+            })
+        ).toHaveAttribute("href", "/saved");
+
+        expect(
+            screen.getByRole("link", {
                 name: /الملف الشخصي والإعدادات/,
             })
         ).toHaveAttribute("href", "/profile");

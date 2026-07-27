@@ -72,6 +72,7 @@ export function PublicPostCard({featured = false, post}: PublicPostCardProps) {
             <CardFooter className="flex-wrap justify-between gap-3">
                 <PostInteractionActions
                     postId={post.id}
+                    authorId={post.author.id}
                     initialLikesCount={post.likesCount}
                     variant="compact"
                 />

@@ -1,7 +1,15 @@
 const fallbackDestination = "/posts";
 const validationOrigin = "https://snd-internal.invalid";
 
-const allowedExactPaths = new Set(["/", "/posts", "/profile", "/my-posts", "/privacy", "/community-guidelines"]);
+const allowedExactPaths = new Set([
+    "/",
+    "/posts",
+    "/profile",
+    "/my-posts",
+    "/saved",
+    "/privacy",
+    "/community-guidelines",
+]);
 
 const allowedPathPrefixes = ["/posts/"] as const;
 

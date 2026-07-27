@@ -13,7 +13,7 @@
 | F3 | Authentication and session | Engineering verified 2026-07-26; deployed browser gate open |
 | F4 | Profiles and current-user content | Implemented; final verification pending |
 | F5 | Post creation, editing, and images | Implemented in three batches; final verification pending |
-| F6 | Comments, likes, saves, and reporting | Proposed |
+| F6 | Comments, likes, saves, and reporting | Implementation candidate — verification pending |
 | F7 | SEO, accessibility, performance, and policy quality | Proposed |
 | F8 | Production deployment and verification | Proposed |
 | F9 | Admin and moderation frontend | Deferred |
@@ -334,6 +334,19 @@ Users always know whether the text post exists; image retry never creates a dupl
 F3 auth and F4 identity/navigation components.
 
 ## Sprint F6 — Comments, Likes, Saves, and Reporting
+
+### Current Status — 2026-07-27
+
+The three implementation batches are present in the frontend candidate:
+
+- lazy authenticated Like/Save state with optimistic mutation and rollback;
+- comment create/edit/delete and post/comment reporting;
+- protected Saved Posts workspace with private Query ownership and Save/Unsave
+  reconciliation;
+- feed/detail integration and authentication-at-interaction return paths.
+
+Engineering and learning closure remain pending until the owner runs the project gates and
+the browser/network matrix below. This status does not claim unexecuted verification.
 
 ### Goal
 

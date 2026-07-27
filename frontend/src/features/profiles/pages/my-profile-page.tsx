@@ -1,4 +1,4 @@
-import {FileText, LockKeyhole, ShieldCheck, UserRound} from "lucide-react";
+import {Bookmark, FileText, LockKeyhole, ShieldCheck, UserRound} from "lucide-react";
 import Link from "next/link";
 
 import {buttonVariants} from "@/components/ui/button";
@@ -50,6 +50,14 @@ export function MyProfilePage() {
                                     >
                                         <FileText aria-hidden="true" />
                                         إدارة منشوراتي
+                                    </Link>
+
+                                    <Link
+                                        href="/saved"
+                                        className={cn(buttonVariants({variant: "ghost"}), "w-full sm:w-auto")}
+                                    >
+                                        <Bookmark aria-hidden="true" />
+                                        المحفوظات
                                     </Link>
                                 </div>
                             </div>
