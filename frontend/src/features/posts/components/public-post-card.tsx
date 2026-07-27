@@ -1,9 +1,10 @@
-import {ArrowUpLeft, Heart} from "lucide-react";
+import {ArrowUpLeft} from "lucide-react";
 import Link from "next/link";
 
 import {Avatar} from "@/components/ui/avatar";
 import {buttonVariants} from "@/components/ui/button";
 import {Card, CardContent, CardFooter, CardHeader} from "@/components/ui/card";
+import {PostInteractionActions} from "@/features/post-interactions/components/post-interaction-actions";
 import {cn} from "@/lib/utils/cn";
 
 import type {PublicPost} from "../schemas/public-posts.schema";
@@ -14,8 +15,6 @@ const postDateFormatter = new Intl.DateTimeFormat("ar-PS", {
     dateStyle: "medium",
     timeZone: "Asia/Gaza",
 });
-
-const postCountFormatter = new Intl.NumberFormat("ar-PS");
 
 type PublicPostCardProps = Readonly<{
     featured?: boolean;
@@ -70,13 +69,12 @@ export function PublicPostCard({featured = false, post}: PublicPostCardProps) {
                 <PublicPostImages images={post.images} title={post.title} />
             </CardContent>
 
-            <CardFooter className="justify-between">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground" aria-label={`عدد الإعجابات: ${post.likesCount}`}>
-                    <Heart aria-hidden="true" className="size-4" />
-                    <span dir="ltr" className="font-semibold text-foreground">
-                        {postCountFormatter.format(post.likesCount)}
-                    </span>
-                </div>
+            <CardFooter className="flex-wrap justify-between gap-3">
+                <PostInteractionActions
+                    postId={post.id}
+                    initialLikesCount={post.likesCount}
+                    variant="compact"
+                />
 
                 <Link href={`/posts/${post.id}`} className={cn(buttonVariants({size: "sm", variant: "secondary"}), "group/link")}>
                     قراءة المنشور

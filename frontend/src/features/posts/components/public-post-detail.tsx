@@ -1,9 +1,9 @@
-import {Heart} from "lucide-react";
 import Link from "next/link";
 
 import {Avatar} from "@/components/ui/avatar";
 import {buttonVariants} from "@/components/ui/button";
 import {Card, CardContent, CardFooter, CardHeader} from "@/components/ui/card";
+import {PostInteractionActions} from "@/features/post-interactions/components/post-interaction-actions";
 import {cn} from "@/lib/utils/cn";
 
 import type {PublicPost} from "../schemas/public-posts.schema";
@@ -15,8 +15,6 @@ const postDateTimeFormatter = new Intl.DateTimeFormat("ar-PS", {
     timeStyle: "short",
     timeZone: "Asia/Gaza",
 });
-
-const postCountFormatter = new Intl.NumberFormat("ar-PS");
 
 type PublicPostDetailProps = Readonly<{
     post: PublicPost;
@@ -82,16 +80,11 @@ export function PublicPostDetail({post}: PublicPostDetailProps) {
             </CardContent>
 
             <CardFooter>
-                <div
-                    className="flex items-center gap-2 text-sm text-muted-foreground"
-                    aria-label={`عدد الإعجابات: ${post.likesCount}`}
-                >
-                    <Heart aria-hidden="true" className="size-4" />
-                    <span>الإعجابات</span>
-                    <span dir="ltr" className="font-semibold text-foreground">
-                        {postCountFormatter.format(post.likesCount)}
-                    </span>
-                </div>
+                <PostInteractionActions
+                    postId={post.id}
+                    initialLikesCount={post.likesCount}
+                    variant="detail"
+                />
             </CardFooter>
         </Card>
     );
