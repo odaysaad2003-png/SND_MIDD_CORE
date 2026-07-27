@@ -1,6 +1,6 @@
 "use client";
 
-import {ChevronDown, LoaderCircle, LogIn, LogOut, Newspaper, RotateCcw, Settings2, UserRoundPlus} from "lucide-react";
+import {ChevronDown, LoaderCircle, LogIn, LogOut, Newspaper, RotateCcw, Settings2, SquarePen, UserRoundPlus} from "lucide-react";
 import Link from "next/link";
 import {useEffect, useId, useRef, useState} from "react";
 
@@ -8,6 +8,7 @@ import {sndToast} from "@/components/feedback/toast/snd-toast-store";
 import {Avatar} from "@/components/ui/avatar";
 import {Button, buttonVariants} from "@/components/ui/button";
 import {ConfirmationDialog} from "@/components/ui/confirmation-dialog";
+import {PostComposerTrigger} from "@/features/posts/components/post-composer-trigger";
 import {cn} from "@/lib/utils/cn";
 
 import {useAuth} from "../providers/auth-provider";
@@ -193,6 +194,23 @@ function AccountMenu({user, logout}: AccountMenuProps) {
                         </div>
 
                         <nav aria-label="روابط الحساب" className="grid gap-1 p-2">
+                            <PostComposerTrigger
+                                variant="ghost"
+                                onBeforeOpen={closeMenu}
+                                className="h-auto min-h-14 w-full justify-start rounded-2xl px-3 py-2.5 text-start"
+                            >
+                                <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-brand/10 text-brand">
+                                    <SquarePen aria-hidden="true" />
+                                </span>
+
+                                <span className="grid min-w-0">
+                                    <span className="font-semibold text-foreground">إنشاء منشور جديد</span>
+                                    <span className="text-xs leading-5 text-muted-foreground">
+                                        اكتب منشورًا وأضف الصور اختياريًا
+                                    </span>
+                                </span>
+                            </PostComposerTrigger>
+
                             <Link
                                 ref={firstActionRef}
                                 href="/profile"
@@ -331,7 +349,20 @@ export function AuthHeaderActions() {
     }
 
     if (status === "authenticated" && user) {
-        return <AccountMenu user={user} logout={logout} />;
+        return (
+            <div role="group" aria-label="إنشاء منشور وإدارة الحساب" className="flex items-center gap-1.5">
+                <PostComposerTrigger
+                    size="sm"
+                    aria-label="إنشاء منشور جديد"
+                    className="rounded-xl px-3 shadow-none"
+                >
+                    <SquarePen aria-hidden="true" />
+                    <span className="hidden xl:inline">منشور جديد</span>
+                </PostComposerTrigger>
+
+                <AccountMenu user={user} logout={logout} />
+            </div>
+        );
     }
 
     return (
