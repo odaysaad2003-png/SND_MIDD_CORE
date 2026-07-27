@@ -368,7 +368,9 @@ export function PostComposerDialog({open, onOpenChange}: PostComposerDialogProps
                             maxLength={POST_TITLE_MAX_LENGTH}
                             disabled={isBusy || Boolean(createdPost)}
                             aria-invalid={form.formState.errors.title ? "true" : undefined}
-                            aria-describedby={form.formState.errors.title ? "post-title-error" : "post-title-description"}
+                            aria-describedby={
+                                form.formState.errors.title ? "post-title-error" : "post-title-description"
+                            }
                             placeholder="مثال: أبحث عن مساعدة في…"
                             {...form.register("title")}
                         />
@@ -389,7 +391,9 @@ export function PostComposerDialog({open, onOpenChange}: PostComposerDialogProps
                             maxLength={POST_CONTENT_MAX_LENGTH}
                             disabled={isBusy || Boolean(createdPost)}
                             aria-invalid={form.formState.errors.content ? "true" : undefined}
-                            aria-describedby={form.formState.errors.content ? "post-content-error" : "post-content-description"}
+                            aria-describedby={
+                                form.formState.errors.content ? "post-content-error" : "post-content-description"
+                            }
                             placeholder="اكتب التفاصيل التي تساعد الآخرين على فهم المنشور…"
                             {...form.register("content")}
                         />
@@ -400,7 +404,7 @@ export function PostComposerDialog({open, onOpenChange}: PostComposerDialogProps
 
                     <PostImagePicker
                         images={images}
-                        disabled={isBusy || phase === "uploading"}
+                        disabled={isBusy}
                         onChange={(nextImages) => {
                             setImages(nextImages);
                             setPresentation(null);
