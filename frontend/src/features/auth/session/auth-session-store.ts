@@ -63,6 +63,7 @@ export const authSessionStore = {
     markChecking(): void {
         accessToken = null;
         csrfToken = null;
+
         publish(checkingSnapshot);
     },
 
@@ -80,9 +81,34 @@ export const authSessionStore = {
         });
     },
 
+    updateCurrentUser(nextUser: AuthUser): void {
+        /*
+         * تحديث الاسم أو الصورة ليس انتقال Auth جديدًا.
+         * لذلك نحافظ على Access Token وCSRF Token كما هما،
+         * ونحدّث فقط الهوية العامة الموجودة في Snapshot.
+         */
+        if (snapshot.status !== "authenticated" || !snapshot.user) {
+            return;
+        }
+
+        /*
+         * يمنع Response قديمة من حساب سابق من الكتابة
+         * فوق مستخدم سجّل الدخول لاحقًا في نفس التبويب.
+         */
+        if (snapshot.user.id !== nextUser.id) {
+            return;
+        }
+
+        publish({
+            status: "authenticated",
+            user: nextUser,
+        });
+    },
+
     clearSession(): void {
         accessToken = null;
         csrfToken = null;
+
         publish(anonymousSnapshot);
     },
 };

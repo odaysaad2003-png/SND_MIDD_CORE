@@ -34,7 +34,10 @@ type AuthContextValue = Readonly<{
     register: (values: RegisterFormValues, options?: AuthActionOptions) => Promise<AuthSessionData>;
 
     logout: (options?: AuthActionOptions) => Promise<void>;
+
     retrySession: () => Promise<void>;
+
+    updateCurrentUserIdentity: (user: AuthUser) => void;
 }>;
 
 type AuthProviderProps = Readonly<{
@@ -188,6 +191,22 @@ export function AuthProvider({children}: AuthProviderProps) {
         await runSessionBootstrap();
     }, [runSessionBootstrap]);
 
+
+
+const updateCurrentUserIdentity = useCallback((user: AuthUser): void => {
+    /*
+     * تحديث الاسم أو الصورة لا ينشئ جلسة جديدة،
+     * ولا يغير Access Token أو CSRF Token.
+     *
+     * Store تتحقق أيضًا أن نتيجة التحديث تخص
+     * المستخدم الحالي نفسه.
+     */
+    authSessionStore.updateCurrentUser(user);
+}, []);
+
+
+
+
     const login = useCallback(
         async (values: LoginFormValues, options: AuthActionOptions = {}): Promise<AuthSessionData> => {
             /*
@@ -282,18 +301,19 @@ export function AuthProvider({children}: AuthProviderProps) {
         }
     }, [clearPrivateQueryCache, snapshot.status]);
 
-    const value = useMemo<AuthContextValue>(
-        () => ({
-            status: snapshot.status,
-            user: snapshot.user,
-            sessionError,
-            login,
-            register,
-            logout,
-            retrySession,
-        }),
-        [login, logout, register, retrySession, sessionError, snapshot.status, snapshot.user]
-    );
+   const value = useMemo<AuthContextValue>(
+       () => ({
+           status: snapshot.status,
+           user: snapshot.user,
+           sessionError,
+           login,
+           register,
+           logout,
+           retrySession,
+           updateCurrentUserIdentity,
+       }),
+       [login, logout, register, retrySession, sessionError, snapshot.status, snapshot.user, updateCurrentUserIdentity]
+   );
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
