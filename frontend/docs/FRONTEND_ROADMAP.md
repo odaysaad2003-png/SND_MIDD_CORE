@@ -11,8 +11,8 @@
 | F1 | Frontend foundation and visual direction | Complete |
 | F2 | Landing page and public discovery | Complete; preserved in deployment smoke |
 | F3 | Authentication and session | Engineering verified 2026-07-26; deployed browser gate open |
-| F4 | Profiles and current-user content | Next after F3 production gate |
-| F5 | Post creation, editing, and images | Proposed |
+| F4 | Profiles and current-user content | Implemented; final verification pending |
+| F5 | Post creation, editing, and images | Implemented in three batches; final verification pending |
 | F6 | Comments, likes, saves, and reporting | Proposed |
 | F7 | SEO, accessibility, performance, and policy quality | Proposed |
 | F8 | Production deployment and verification | Proposed |
@@ -289,6 +289,8 @@ Email never appears publicly; private profile and current-user content managemen
 F3 auth.
 
 ## Sprint F5 — Post Creation, Editing, and Images
+
+**Current status:** Implemented across three integrated batches on 2026-07-27: global two-step composer, owner management workspace, public-surface owner actions, auth-at-interaction return flow, and offline-aware mutation UX. Local Lint, TypeScript, tests, production build, and the complete browser matrix remain pending; implementation must not be marked engineering-verified until those gates run.
 
 ### Goal
 

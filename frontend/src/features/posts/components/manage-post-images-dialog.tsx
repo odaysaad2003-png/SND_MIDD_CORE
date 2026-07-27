@@ -1,6 +1,6 @@
 "use client";
 
-import {ImageOff, ImagePlus, LoaderCircle, Trash2} from "lucide-react";
+import {ImageOff, ImagePlus, LoaderCircle, Trash2, WifiOff} from "lucide-react";
 import Image from "next/image";
 import {useEffect, useRef, useState} from "react";
 
@@ -16,6 +16,7 @@ import {getPublicPost} from "../api/get-public-post";
 
 import {mapPostManagementError, type PostManagementErrorPresentation} from "../errors/post-management-error-mapper";
 import {usePostCacheActions, useRemovePostImage, useUploadPostImages} from "../hooks/use-post-authoring-mutations";
+import {useOnlineStatus} from "../hooks/use-online-status";
 import {disposePostImageSelections, type PostImageSelection} from "../lib/post-image-selection";
 import {MAX_POST_IMAGES} from "../schemas/post-authoring.schema";
 import type {PublicPost} from "../schemas/public-posts.schema";
@@ -25,13 +26,15 @@ import {PostImagePicker} from "./post-image-picker";
 type ManagePostImagesDialogProps = Readonly<{
     open: boolean;
     post: PublicPost;
+    onChanged?: (post: PublicPost) => void;
     onOpenChange: (open: boolean) => void;
 }>;
 
-export function ManagePostImagesDialog({open, post, onOpenChange}: ManagePostImagesDialogProps) {
+export function ManagePostImagesDialog({open, post, onChanged, onOpenChange}: ManagePostImagesDialogProps) {
     const uploadMutation = useUploadPostImages();
     const removeMutation = useRemovePostImage();
     const postCache = usePostCacheActions();
+    const isOnline = useOnlineStatus();
 
     const [selectedImages, setSelectedImages] = useState<readonly PostImageSelection[]>([]);
     const selectedImagesRef = useRef<readonly PostImageSelection[]>([]);
@@ -89,10 +92,18 @@ export function ManagePostImagesDialog({open, post, onOpenChange}: ManagePostIma
             return;
         }
 
+        if (!isOnline) {
+            sndToast.warning({
+                title: "رفع الصور يحتاج اتصالًا بالإنترنت",
+                description: "احتفظنا بالصور المختارة داخل النافذة، ولم نرسل أي طلب.",
+            });
+            return;
+        }
+
         setPresentation(null);
 
         try {
-            await uploadMutation.mutateAsync({
+            const updatedPost = await uploadMutation.mutateAsync({
                 postId: post.id,
                 files: selectedImages.map((selection) => selection.file),
             });
@@ -105,6 +116,8 @@ export function ManagePostImagesDialog({open, post, onOpenChange}: ManagePostIma
                 title: "تمت إضافة الصور",
                 description: "رفعنا الصور وربطناها بالمنشور دون تغيير النص.",
             });
+
+            onChanged?.(updatedPost);
         } catch (error) {
             const shouldReconcile =
                 error instanceof ApiError &&
@@ -127,6 +140,8 @@ export function ManagePostImagesDialog({open, post, onOpenChange}: ManagePostIma
                             title: "تمت إضافة الصور",
                             description: "تأكدنا من الرفع بعد انقطاع الرد وحدّثنا المنشور.",
                         });
+
+                        onChanged?.(reconciledPost);
                         return;
                     }
                 } catch {
@@ -152,10 +167,19 @@ export function ManagePostImagesDialog({open, post, onOpenChange}: ManagePostIma
             return;
         }
 
+        if (!isOnline) {
+            setImageToRemove(null);
+            sndToast.warning({
+                title: "حذف الصورة يحتاج اتصالًا بالإنترنت",
+                description: "لم نرسل أي طلب، والصورة ما زالت مرتبطة بالمنشور.",
+            });
+            return;
+        }
+
         setPresentation(null);
 
         try {
-            await removeMutation.mutateAsync({
+            const updatedPost = await removeMutation.mutateAsync({
                 postId: post.id,
                 imageUrl: imageToRemove,
             });
@@ -166,6 +190,8 @@ export function ManagePostImagesDialog({open, post, onOpenChange}: ManagePostIma
                 title: "تم حذف الصورة",
                 description: "أزلنا الصورة من المنشور وحدّثنا القوائم.",
             });
+
+            onChanged?.(updatedPost);
         } catch (error) {
             const shouldReconcile =
                 error instanceof ApiError &&
@@ -184,6 +210,8 @@ export function ManagePostImagesDialog({open, post, onOpenChange}: ManagePostIma
                             title: "تم حذف الصورة",
                             description: "تأكدنا من الحذف بعد انقطاع الرد وحدّثنا المنشور.",
                         });
+
+                        onChanged?.(reconciledPost);
                         return;
                     }
                 } catch {
@@ -210,12 +238,13 @@ export function ManagePostImagesDialog({open, post, onOpenChange}: ManagePostIma
     const footer = (
         <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
             <p aria-live="polite" className="min-h-6 text-sm text-muted-foreground">
-                {uploadMutation.isPending ? "نرفع الصور الجديدة ونحدّث المنشور…" : null}
-                {removeMutation.isPending ? "نحذف الصورة من المنشور…" : null}
-                {!isBusy && selectedImages.length > 0
+                {!isOnline ? "أنت غير متصل. ستبقى الصور المختارة محليًا حتى عودة الاتصال." : null}
+                {isOnline && uploadMutation.isPending ? "نرفع الصور الجديدة ونحدّث المنشور…" : null}
+                {isOnline && removeMutation.isPending ? "نحذف الصورة من المنشور…" : null}
+                {isOnline && !isBusy && selectedImages.length > 0
                     ? `${selectedImages.length} صور جاهزة للرفع، و${remainingSlots} أماكن متبقية.`
                     : null}
-                {!isBusy && selectedImages.length === 0
+                {isOnline && !isBusy && selectedImages.length === 0
                     ? "حذف صورة موجودة يتم فور تأكيدك، أما الصور الجديدة فلا تُرفع إلا بزر الإضافة."
                     : null}
             </p>
@@ -233,21 +262,25 @@ export function ManagePostImagesDialog({open, post, onOpenChange}: ManagePostIma
 
                 <Button
                     type="button"
-                    disabled={isBusy || selectedImages.length === 0}
+                    disabled={isBusy || selectedImages.length === 0 || !isOnline}
                     aria-busy={uploadMutation.isPending}
                     onClick={() => void uploadSelectedImages()}
                     className="w-full sm:min-w-44 sm:w-auto"
                 >
                     {uploadMutation.isPending ? (
                         <LoaderCircle aria-hidden="true" className="motion-safe:animate-spin" />
-                    ) : (
+                    ) : isOnline ? (
                         <ImagePlus aria-hidden="true" />
+                    ) : (
+                        <WifiOff aria-hidden="true" />
                     )}
                     {uploadMutation.isPending
                         ? "جار رفع الصور"
-                        : selectedImages.length > 0
-                          ? `إضافة ${selectedImages.length} صور`
-                          : "اختر صورًا أولًا"}
+                        : !isOnline
+                          ? "بانتظار الاتصال"
+                          : selectedImages.length > 0
+                            ? `إضافة ${selectedImages.length} صور`
+                            : "اختر صورًا أولًا"}
                 </Button>
             </div>
         </div>
@@ -264,6 +297,14 @@ export function ManagePostImagesDialog({open, post, onOpenChange}: ManagePostIma
                 footer={footer}
             >
                 <div className="grid gap-7">
+                    {!isOnline ? (
+                        <Feedback
+                            variant="warning"
+                            title="وضع عدم الاتصال"
+                            description="يمكنك اختيار الصور ومراجعتها محليًا، لكن الرفع والحذف سيبقيان معطلين حتى يعود الاتصال."
+                        />
+                    ) : null}
+
                     {presentation ? (
                         <Feedback
                             variant={presentation.tone}
@@ -331,7 +372,7 @@ export function ManagePostImagesDialog({open, post, onOpenChange}: ManagePostIma
                                                     type="button"
                                                     variant="danger"
                                                     size="icon"
-                                                    disabled={isBusy}
+                                                    disabled={isBusy || !isOnline}
                                                     aria-label={`حذف الصورة الحالية رقم ${index + 1}`}
                                                     onClick={() => {
                                                         setPresentation(null);

@@ -7,6 +7,7 @@ import {Card, CardContent, CardFooter, CardHeader} from "@/components/ui/card";
 import {cn} from "@/lib/utils/cn";
 
 import type {PublicPost} from "../schemas/public-posts.schema";
+import {CurrentUserPostActions} from "./current-user-post-actions";
 import {PublicPostImages} from "./public-post-images";
 
 const postDateTimeFormatter = new Intl.DateTimeFormat("ar-PS", {
@@ -71,6 +72,13 @@ export function PublicPostDetail({post}: PublicPostDetailProps) {
                 </p>
 
                 <PublicPostImages images={post.images} title={post.title} />
+
+                <CurrentUserPostActions
+                    post={post}
+                    variant="detail"
+                    afterDeleteHref="/my-posts"
+                    refreshAfterMutation
+                />
             </CardContent>
 
             <CardFooter>

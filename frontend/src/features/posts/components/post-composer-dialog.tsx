@@ -1,7 +1,7 @@
 "use client";
 
 import {zodResolver} from "@hookform/resolvers/zod";
-import {CheckCircle2, ImageUp, LoaderCircle, Send, ShieldCheck} from "lucide-react";
+import {CheckCircle2, ImageUp, LoaderCircle, Send, ShieldCheck, WifiOff} from "lucide-react";
 import {useRouter} from "next/navigation";
 import {useEffect, useRef, useState} from "react";
 import {useForm} from "react-hook-form";
@@ -24,6 +24,7 @@ import {
     type PostComposerErrorPresentation,
 } from "../errors/post-composer-error-mapper";
 import {useCreatePost, usePostCacheActions, useUploadPostImages} from "../hooks/use-post-authoring-mutations";
+import {useOnlineStatus} from "../hooks/use-online-status";
 import {disposePostImageSelections, type PostImageSelection} from "../lib/post-image-selection";
 import {getPublicPost} from "../api/get-public-post";
 import {
@@ -54,6 +55,7 @@ export function PostComposerDialog({open, onOpenChange}: PostComposerDialogProps
     const createMutation = useCreatePost();
     const uploadMutation = useUploadPostImages();
     const postCache = usePostCacheActions();
+    const isOnline = useOnlineStatus();
 
     const [images, setImages] = useState<readonly PostImageSelection[]>([]);
     const imagesRef = useRef<readonly PostImageSelection[]>([]);
@@ -145,6 +147,15 @@ export function PostComposerDialog({open, onOpenChange}: PostComposerDialogProps
             return;
         }
 
+        if (!isOnline) {
+            sndToast.warning({
+                title: "رفع الصور يحتاج اتصالًا بالإنترنت",
+                description: "المنشور النصي موجود، واحتفظنا بالصور لإعادة الرفع بعد عودة الاتصال.",
+            });
+            setPhase("upload-failed");
+            return;
+        }
+
         setPresentation(null);
         setPhase("uploading");
 
@@ -191,6 +202,14 @@ export function PostComposerDialog({open, onOpenChange}: PostComposerDialogProps
     }
 
     const submit = form.handleSubmit(async (values) => {
+        if (!isOnline) {
+            sndToast.warning({
+                title: "النشر يحتاج اتصالًا بالإنترنت",
+                description: "احتفظنا بالنص والصور داخل النافذة، ولم نرسل أي طلب إلى الخادم.",
+            });
+            return;
+        }
+
         if (createdPost) {
             await uploadSelectedImages(createdPost);
             return;
@@ -233,10 +252,11 @@ export function PostComposerDialog({open, onOpenChange}: PostComposerDialogProps
     const footer = (
         <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div aria-live="polite" className="min-h-6 text-sm text-muted-foreground">
-                {phase === "creating" ? "ننشر النص أولًا…" : null}
-                {phase === "uploading" ? "نُشر النص، والآن نرفع الصور دون إنشاء منشور جديد…" : null}
-                {phase === "upload-failed" ? "المنشور موجود بدون الصور المختارة." : null}
-                {phase === "editing" ? "لن تُرفع الصور إلا بعد نجاح نشر النص." : null}
+                {!isOnline ? "أنت غير متصل. ستبقى المسودة والصور داخل النافذة حتى عودة الاتصال." : null}
+                {isOnline && phase === "creating" ? "ننشر النص أولًا…" : null}
+                {isOnline && phase === "uploading" ? "نُشر النص، والآن نرفع الصور دون إنشاء منشور جديد…" : null}
+                {isOnline && phase === "upload-failed" ? "المنشور موجود بدون الصور المختارة." : null}
+                {isOnline && phase === "editing" ? "لن تُرفع الصور إلا بعد نجاح نشر النص." : null}
             </div>
 
             <div className="flex flex-col-reverse gap-2 sm:flex-row">
@@ -267,7 +287,7 @@ export function PostComposerDialog({open, onOpenChange}: PostComposerDialogProps
 
                 <Button
                     type="button"
-                    disabled={isBusy}
+                    disabled={isBusy || !isOnline}
                     aria-busy={isBusy}
                     onClick={() => {
                         void submit();
@@ -275,15 +295,17 @@ export function PostComposerDialog({open, onOpenChange}: PostComposerDialogProps
                     className="w-full sm:min-w-44 sm:w-auto"
                 >
                     {isBusy ? <LoaderCircle aria-hidden="true" className="motion-safe:animate-spin" /> : null}
-                    {phase === "creating" ? "جار نشر النص" : null}
-                    {phase === "uploading" ? "جار رفع الصور" : null}
-                    {phase === "upload-failed" ? (
+                    {!isBusy && !isOnline ? <WifiOff aria-hidden="true" /> : null}
+                    {!isOnline ? "بانتظار الاتصال" : null}
+                    {isOnline && phase === "creating" ? "جار نشر النص" : null}
+                    {isOnline && phase === "uploading" ? "جار رفع الصور" : null}
+                    {isOnline && phase === "upload-failed" ? (
                         <>
                             <ImageUp aria-hidden="true" />
                             إعادة رفع الصور
                         </>
                     ) : null}
-                    {phase === "editing" ? (
+                    {isOnline && phase === "editing" ? (
                         <>
                             <Send aria-hidden="true" />
                             {images.length > 0 ? `نشر ورفع ${images.length} صور` : "نشر المنشور"}
@@ -330,6 +352,14 @@ export function PostComposerDialog({open, onOpenChange}: PostComposerDialogProps
                         </div>
                     </div>
 
+                    {!isOnline ? (
+                        <Feedback
+                            variant="warning"
+                            title="وضع عدم الاتصال"
+                            description="يمكنك كتابة المنشور واختيار الصور الآن، لكن الإرسال سيبقى معطلًا حتى يعود اتصال المتصفح."
+                        />
+                    ) : null}
+
                     {presentation ? (
                         <Feedback
                             variant={presentation.tone}
@@ -368,9 +398,7 @@ export function PostComposerDialog({open, onOpenChange}: PostComposerDialogProps
                             maxLength={POST_TITLE_MAX_LENGTH}
                             disabled={isBusy || Boolean(createdPost)}
                             aria-invalid={form.formState.errors.title ? "true" : undefined}
-                            aria-describedby={
-                                form.formState.errors.title ? "post-title-error" : "post-title-description"
-                            }
+                            aria-describedby={form.formState.errors.title ? "post-title-error" : "post-title-description"}
                             placeholder="مثال: أبحث عن مساعدة في…"
                             {...form.register("title")}
                         />
@@ -391,9 +419,7 @@ export function PostComposerDialog({open, onOpenChange}: PostComposerDialogProps
                             maxLength={POST_CONTENT_MAX_LENGTH}
                             disabled={isBusy || Boolean(createdPost)}
                             aria-invalid={form.formState.errors.content ? "true" : undefined}
-                            aria-describedby={
-                                form.formState.errors.content ? "post-content-error" : "post-content-description"
-                            }
+                            aria-describedby={form.formState.errors.content ? "post-content-error" : "post-content-description"}
                             placeholder="اكتب التفاصيل التي تساعد الآخرين على فهم المنشور…"
                             {...form.register("content")}
                         />

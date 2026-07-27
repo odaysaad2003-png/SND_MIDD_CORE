@@ -7,6 +7,7 @@ import {Card, CardContent, CardFooter, CardHeader} from "@/components/ui/card";
 import {cn} from "@/lib/utils/cn";
 
 import type {PublicPost} from "../schemas/public-posts.schema";
+import {CurrentUserPostActions} from "./current-user-post-actions";
 import {PublicPostImages} from "./public-post-images";
 
 const postDateFormatter = new Intl.DateTimeFormat("ar-PS", {
@@ -43,11 +44,16 @@ export function PublicPostCard({featured = false, post}: PublicPostCardProps) {
                             </time>
                         </div>
                     </div>
-                    {featured ? (
-                        <span className="rounded-full border border-brand/20 bg-brand/10 px-2.5 py-1 text-xs font-semibold text-brand">
-                            الأحدث
-                        </span>
-                    ) : null}
+
+                    <div className="flex shrink-0 items-center gap-1.5">
+                        {featured ? (
+                            <span className="rounded-full border border-brand/20 bg-brand/10 px-2.5 py-1 text-xs font-semibold text-brand">
+                                الأحدث
+                            </span>
+                        ) : null}
+
+                        <CurrentUserPostActions post={post} variant="compact" />
+                    </div>
                 </div>
 
                 <h3 id={titleId} className="break-words text-lg font-bold leading-8 text-foreground">

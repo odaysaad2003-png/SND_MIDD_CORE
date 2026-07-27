@@ -2,6 +2,7 @@ import {FileText, LockKeyhole, ShieldCheck, UserRound} from "lucide-react";
 import Link from "next/link";
 
 import {buttonVariants} from "@/components/ui/button";
+import {PostComposerTrigger} from "@/features/posts/components/post-composer-trigger";
 import {cn} from "@/lib/utils/cn";
 
 import {MyProfileClient} from "../components/my-profile-client";
@@ -40,7 +41,9 @@ export function MyProfilePage() {
                                     </p>
                                 </div>
 
-                                <div>
+                                <div className="flex flex-col gap-2 sm:flex-row">
+                                    <PostComposerTrigger className="w-full sm:w-auto" />
+
                                     <Link
                                         href="/my-posts"
                                         className={cn(buttonVariants({variant: "secondary"}), "w-full sm:w-auto")}

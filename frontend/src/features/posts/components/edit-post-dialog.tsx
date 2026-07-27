@@ -1,7 +1,7 @@
 "use client";
 
 import {zodResolver} from "@hookform/resolvers/zod";
-import {LoaderCircle, Save} from "lucide-react";
+import {LoaderCircle, Save, WifiOff} from "lucide-react";
 import {useState} from "react";
 import {useForm} from "react-hook-form";
 
@@ -16,9 +16,9 @@ import {Textarea} from "@/components/ui/textarea";
 import {ApiError} from "@/lib/api/api-error";
 
 import {getPublicPost} from "../api/get-public-post";
-
 import {mapPostManagementError, type PostManagementErrorPresentation} from "../errors/post-management-error-mapper";
 import {usePostCacheActions, useUpdatePost} from "../hooks/use-post-authoring-mutations";
+import {useOnlineStatus} from "../hooks/use-online-status";
 import {
     POST_CONTENT_MAX_LENGTH,
     POST_TITLE_MAX_LENGTH,
@@ -31,12 +31,14 @@ import type {PublicPost} from "../schemas/public-posts.schema";
 type EditPostDialogProps = Readonly<{
     open: boolean;
     post: PublicPost;
+    onSaved?: (post: PublicPost) => void;
     onOpenChange: (open: boolean) => void;
 }>;
 
-export function EditPostDialog({open, post, onOpenChange}: EditPostDialogProps) {
+export function EditPostDialog({open, post, onSaved, onOpenChange}: EditPostDialogProps) {
     const mutation = useUpdatePost();
     const postCache = usePostCacheActions();
+    const isOnline = useOnlineStatus();
     const [presentation, setPresentation] = useState<PostManagementErrorPresentation | null>(null);
     const [isDiscardDialogOpen, setIsDiscardDialogOpen] = useState(false);
 
@@ -78,6 +80,14 @@ export function EditPostDialog({open, post, onOpenChange}: EditPostDialogProps) 
     }
 
     const submit = form.handleSubmit(async (values) => {
+        if (!isOnline) {
+            sndToast.warning({
+                title: "الحفظ يحتاج اتصالًا بالإنترنت",
+                description: "احتفظنا بالتعديلات داخل النافذة، ولم نرسل أي طلب إلى الخادم.",
+            });
+            return;
+        }
+
         const payload: PostUpdatePayload = {};
         const nextTitle = values.title.trim();
         const nextContent = values.content.trim();
@@ -102,13 +112,14 @@ export function EditPostDialog({open, post, onOpenChange}: EditPostDialogProps) 
         setPresentation(null);
 
         try {
-            await mutation.mutateAsync({postId: post.id, values: payload});
+            const updatedPost = await mutation.mutateAsync({postId: post.id, values: payload});
 
             sndToast.success({
                 title: "تم تحديث المنشور",
                 description: "حُفظ العنوان والمحتوى وحدثنا ظهوره في القوائم.",
             });
 
+            onSaved?.(updatedPost);
             closeDialog();
         } catch (error) {
             const shouldReconcile =
@@ -130,6 +141,7 @@ export function EditPostDialog({open, post, onOpenChange}: EditPostDialogProps) 
                             description: "تأكدنا من التعديلات بعد انقطاع الرد وحدّثنا القوائم.",
                         });
 
+                        onSaved?.(reconciledPost);
                         closeDialog();
                         return;
                     }
@@ -154,7 +166,9 @@ export function EditPostDialog({open, post, onOpenChange}: EditPostDialogProps) 
     const footer = (
         <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
             <p aria-live="polite" className="min-h-6 text-sm text-muted-foreground">
-                {mutation.isPending ? "نحفظ التعديلات ونحدّث قوائم المنشورات…" : "لن تتغير الصور من هذه النافذة."}
+                {!isOnline ? "أنت غير متصل. يمكنك مواصلة الكتابة، وسيعود الحفظ عند عودة الاتصال." : null}
+                {isOnline && mutation.isPending ? "نحفظ التعديلات ونحدّث قوائم المنشورات…" : null}
+                {isOnline && !mutation.isPending ? "لن تتغير الصور من هذه النافذة." : null}
             </p>
 
             <div className="flex flex-col-reverse gap-2 sm:flex-row">
@@ -170,17 +184,19 @@ export function EditPostDialog({open, post, onOpenChange}: EditPostDialogProps) 
 
                 <Button
                     type="button"
-                    disabled={mutation.isPending || !form.formState.isDirty}
+                    disabled={mutation.isPending || !form.formState.isDirty || !isOnline}
                     aria-busy={mutation.isPending}
                     onClick={() => void submit()}
                     className="w-full sm:min-w-40 sm:w-auto"
                 >
                     {mutation.isPending ? (
                         <LoaderCircle aria-hidden="true" className="motion-safe:animate-spin" />
-                    ) : (
+                    ) : isOnline ? (
                         <Save aria-hidden="true" />
+                    ) : (
+                        <WifiOff aria-hidden="true" />
                     )}
-                    {mutation.isPending ? "جار الحفظ" : "حفظ التعديلات"}
+                    {mutation.isPending ? "جار الحفظ" : isOnline ? "حفظ التعديلات" : "بانتظار الاتصال"}
                 </Button>
             </div>
         </div>
@@ -205,6 +221,14 @@ export function EditPostDialog({open, post, onOpenChange}: EditPostDialogProps) 
                     }}
                     className="grid gap-6"
                 >
+                    {!isOnline ? (
+                        <Feedback
+                            variant="warning"
+                            title="وضع عدم الاتصال"
+                            description="يمكنك تعديل الحقول الآن، لكن زر الحفظ سيبقى معطلًا حتى يعود اتصال المتصفح."
+                        />
+                    ) : null}
+
                     {presentation ? (
                         <Feedback
                             variant={presentation.tone}

@@ -3,6 +3,7 @@ import {Suspense} from "react";
 
 import {PublicFeed} from "@/features/posts/components/public-feed";
 import {PublicFeedControls} from "@/features/posts/components/public-feed-controls";
+import {PostComposerEntryCard} from "@/features/posts/components/post-composer-entry-card";
 import {PublicFeedSkeleton} from "@/features/posts/components/public-feed-skeleton";
 import {
     parsePublicFeedUrlState,
@@ -34,6 +35,8 @@ export async function PublicPostsPage({searchParams}: PublicPostsPageProps) {
                         </div>
                     </div>
                 </header>
+
+                <PostComposerEntryCard />
 
                 <PublicFeedControls state={state} />
 
