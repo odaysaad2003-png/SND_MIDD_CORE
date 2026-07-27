@@ -219,8 +219,9 @@ export function ProfileAvatarSection({profile}: ProfileAvatarSectionProps) {
 
     return (
         <section
+            id="profile-avatar"
             aria-labelledby="profile-avatar-heading"
-            className="rounded-3xl border border-border bg-surface-raised p-5 shadow-sm sm:p-6"
+            className="scroll-mt-28 rounded-3xl border border-border bg-surface-raised p-5 shadow-sm sm:p-6"
         >
             <div className="grid gap-6">
                 <header className="grid gap-1">

@@ -7,6 +7,7 @@ import {beforeEach, describe, expect, it, vi} from "vitest";
 const authMocks = vi.hoisted(() => ({
     getContext: vi.fn(),
     logout: vi.fn(),
+    retrySession: vi.fn(),
 }));
 
 const toastMocks = vi.hoisted(() => ({
@@ -28,7 +29,7 @@ const user = {
     id: "user-1",
     name: "مستخدم سند",
     email: "user@example.com",
-    role: "user",
+    role: "user" as const,
     avatar: null,
     isActive: true,
     createdAt: "2026-07-26T10:00:00.000Z",
@@ -37,7 +38,9 @@ const user = {
 
 beforeEach(() => {
     authMocks.logout.mockReset();
+    authMocks.retrySession.mockReset();
     authMocks.getContext.mockReset();
+
     toastMocks.success.mockReset();
     toastMocks.warning.mockReset();
 });
@@ -49,12 +52,22 @@ describe("AuthHeaderActions", () => {
             user: null,
             sessionError: null,
             logout: authMocks.logout,
+            retrySession: authMocks.retrySession,
         });
 
         render(<AuthHeaderActions />);
 
-        expect(screen.getByRole("link", {name: "تسجيل الدخول"})).toHaveAttribute("href", "/login");
-        expect(screen.getByRole("link", {name: "إنشاء حساب"})).toHaveAttribute("href", "/register");
+        expect(
+            screen.getByRole("link", {
+                name: "تسجيل الدخول",
+            })
+        ).toHaveAttribute("href", "/login");
+
+        expect(
+            screen.getByRole("link", {
+                name: "إنشاء حساب",
+            })
+        ).toHaveAttribute("href", "/register");
     });
 
     it("does not flash anonymous actions while the session is resolving", () => {
@@ -63,12 +76,114 @@ describe("AuthHeaderActions", () => {
             user: null,
             sessionError: null,
             logout: authMocks.logout,
+            retrySession: authMocks.retrySession,
         });
 
         render(<AuthHeaderActions />);
 
-        expect(screen.getByRole("status", {name: "جار التحقق من الجلسة"})).toBeInTheDocument();
-        expect(screen.queryByRole("link", {name: "تسجيل الدخول"})).not.toBeInTheDocument();
+        expect(
+            screen.getByRole("status", {
+                name: "جار التحقق من الجلسة",
+            })
+        ).toBeInTheDocument();
+
+        expect(
+            screen.queryByRole("link", {
+                name: "تسجيل الدخول",
+            })
+        ).not.toBeInTheDocument();
+    });
+
+    it("offers session retry instead of showing guest actions after a bootstrap network failure", async () => {
+        authMocks.retrySession.mockResolvedValue(undefined);
+
+        authMocks.getContext.mockReturnValue({
+            status: "checking",
+            user: null,
+            sessionError: new Error("Network unavailable"),
+            logout: authMocks.logout,
+            retrySession: authMocks.retrySession,
+        });
+
+        render(<AuthHeaderActions />);
+
+        expect(
+            screen.queryByRole("link", {
+                name: "تسجيل الدخول",
+            })
+        ).not.toBeInTheDocument();
+
+        await userEvent.click(
+            screen.getByRole("button", {
+                name: "إعادة محاولة التحقق من الجلسة",
+            })
+        );
+
+        expect(authMocks.retrySession).toHaveBeenCalledTimes(1);
+    });
+
+    it("shows the authenticated identity and profile-management actions", async () => {
+        authMocks.getContext.mockReturnValue({
+            status: "authenticated",
+            user,
+            sessionError: null,
+            logout: authMocks.logout,
+            retrySession: authMocks.retrySession,
+        });
+
+        render(<AuthHeaderActions />);
+
+        const accountButton = screen.getByRole("button", {
+            name: "فتح قائمة حساب مستخدم سند",
+        });
+
+        await userEvent.click(accountButton);
+
+        expect(
+            screen.getByRole("link", {
+                name: /إدارة الملف الشخصي/,
+            })
+        ).toHaveAttribute("href", "/profile");
+
+        expect(
+            screen.getByRole("link", {
+                name: /تغيير صورة الحساب/,
+            })
+        ).toHaveAttribute("href", "/profile#profile-avatar");
+    });
+
+    it("closes the account panel with Escape and returns focus to its trigger", async () => {
+        authMocks.getContext.mockReturnValue({
+            status: "authenticated",
+            user,
+            sessionError: null,
+            logout: authMocks.logout,
+            retrySession: authMocks.retrySession,
+        });
+
+        render(<AuthHeaderActions />);
+
+        const accountButton = screen.getByRole("button", {
+            name: "فتح قائمة حساب مستخدم سند",
+        });
+
+        await userEvent.click(accountButton);
+
+        expect(
+            screen.getByRole("link", {
+                name: /إدارة الملف الشخصي/,
+            })
+        ).toBeInTheDocument();
+
+        await userEvent.keyboard("{Escape}");
+
+        expect(
+            screen.queryByRole("link", {
+                name: /إدارة الملف الشخصي/,
+            })
+        ).not.toBeInTheDocument();
+
+        expect(accountButton).toHaveFocus();
     });
 
     it("logs out an authenticated user and confirms remote cleanup", async () => {
@@ -77,17 +192,31 @@ describe("AuthHeaderActions", () => {
             user,
             sessionError: null,
             logout: authMocks.logout,
+            retrySession: authMocks.retrySession,
         });
+
         authMocks.logout.mockResolvedValue(undefined);
 
         render(<AuthHeaderActions />);
 
-        await userEvent.click(screen.getByRole("button", {name: "تسجيل الخروج"}));
+        await userEvent.click(
+            screen.getByRole("button", {
+                name: "فتح قائمة حساب مستخدم سند",
+            })
+        );
+
+        await userEvent.click(
+            screen.getByRole("button", {
+                name: "تسجيل الخروج",
+            })
+        );
 
         await waitFor(() => {
             expect(authMocks.logout).toHaveBeenCalledTimes(1);
+
             expect(toastMocks.success).toHaveBeenCalledTimes(1);
         });
+
         expect(toastMocks.warning).not.toHaveBeenCalled();
     });
 
@@ -97,12 +226,24 @@ describe("AuthHeaderActions", () => {
             user,
             sessionError: null,
             logout: authMocks.logout,
+            retrySession: authMocks.retrySession,
         });
+
         authMocks.logout.mockRejectedValue(new TypeError("Network unavailable"));
 
         render(<AuthHeaderActions />);
 
-        await userEvent.click(screen.getByRole("button", {name: "تسجيل الخروج"}));
+        await userEvent.click(
+            screen.getByRole("button", {
+                name: "فتح قائمة حساب مستخدم سند",
+            })
+        );
+
+        await userEvent.click(
+            screen.getByRole("button", {
+                name: "تسجيل الخروج",
+            })
+        );
 
         await waitFor(() => {
             expect(toastMocks.warning).toHaveBeenCalledWith(
@@ -112,6 +253,7 @@ describe("AuthHeaderActions", () => {
                 })
             );
         });
+
         expect(toastMocks.success).not.toHaveBeenCalled();
     });
 });
