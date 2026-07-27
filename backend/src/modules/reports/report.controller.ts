@@ -35,7 +35,7 @@ export const reportComment = asyncHandler(async (req: Request, res: Response) =>
 });
 
 export const listReports = asyncHandler(async (req: Request, res: Response) => {
-    const {page, limit, sort, status, targetType} = req.query as unknown as ListReportsQuery;
+    const {page, limit, sort, status, targetType, reason} = req.query as unknown as ListReportsQuery;
 
     const result = await reportService.listReports(req.user!.id, {
         page,
@@ -43,6 +43,7 @@ export const listReports = asyncHandler(async (req: Request, res: Response) => {
         sort,
         status,
         targetType,
+        reason,
     });
 
     sendSuccess(res, {

@@ -6,6 +6,7 @@ export interface SanitizedAdminUserSummary {
     name: string;
     email: string;
     role: UserRole;
+    avatar: string | null;
     isActive: boolean;
     createdAt: Date;
     updatedAt: Date;
@@ -23,6 +24,7 @@ export function sanitizeAdminUserSummary(user: IUser): SanitizedAdminUserSummary
         name: user.name,
         email: user.email,
         role: user.role,
+        avatar: user.avatar ?? null,
         isActive: user.isActive,
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,

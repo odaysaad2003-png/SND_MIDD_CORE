@@ -167,6 +167,39 @@ describe("AuthHeaderActions", () => {
                 name: /الملف الشخصي والإعدادات/,
             })
         ).toHaveAttribute("href", "/profile");
+
+        expect(
+            screen.queryByRole("link", {
+                name: /لوحة الإدارة/,
+            })
+        ).not.toBeInTheDocument();
+    });
+
+    it("shows the admin entry only for an authenticated admin", async () => {
+        authMocks.getContext.mockReturnValue({
+            status: "authenticated",
+            user: {
+                ...user,
+                role: "admin",
+            },
+            sessionError: null,
+            logout: authMocks.logout,
+            retrySession: authMocks.retrySession,
+        });
+
+        renderHeaderActions();
+
+        await userEvent.click(
+            screen.getByRole("button", {
+                name: "فتح قائمة حساب مستخدم سند",
+            })
+        );
+
+        expect(
+            screen.getByRole("link", {
+                name: /لوحة الإدارة/,
+            })
+        ).toHaveAttribute("href", "/admin");
     });
 
     it("closes the account panel with Escape and returns focus to its trigger", async () => {

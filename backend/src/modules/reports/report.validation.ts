@@ -39,6 +39,7 @@ export const listReportsQuerySchema = z.object({
         limit: z.coerce.number().int().positive().max(50).default(10),
         status: z.enum(REPORT_STATUSES).optional(),
         targetType: z.enum(REPORT_TARGET_TYPES).optional(),
+        reason: z.enum(REPORT_REASONS).optional(),
         sort: z.enum(["latest", "oldest"]).default("latest"),
     })
     .strict(),

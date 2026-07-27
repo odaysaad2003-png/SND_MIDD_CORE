@@ -465,6 +465,61 @@ sexual_content | misinformation | other
 
 The returned Report can include reporter, target details, reason, optional details, status, review fields, and timestamps. Do not display admin-oriented fields in the user confirmation.
 
+## Admin and Moderation Endpoints
+
+All endpoints below require a Bearer access token with an Admin role claim. The backend
+also revalidates that the acting account still exists, is active, and still has the Admin
+role before reads and inside the same transaction as high-impact writes.
+
+### Dashboard Summary
+
+| Property | Value |
+|---|---|
+| Method/path | `GET /admin/dashboard/summary` |
+| Success | `200`, one operational snapshot |
+
+The response contains classified counts for Users, Posts, Comments, active Likes/Saves,
+Reports, and `generatedAt`. It is a non-transactional operational snapshot and exposes no
+documents, email addresses, tokens, storage IDs, or AuditEvent payloads.
+
+### Admin Users
+
+| Method/path | Contract |
+|---|---|
+| `GET /admin/users` | `page`, `limit`, optional `q`, `status=active\|suspended`, `role=user\|admin`, `sort=latest\|oldest`; paginated safe summaries |
+| `GET /admin/users/:userId` | Safe detail with suspension metadata |
+| `PATCH /admin/users/:userId/status` | Strict body `{ status: 'active' \| 'suspended', reason: string }`; reason 5–500 |
+
+Safe User summaries contain `id`, `name`, `email`, `role`, display `avatar`, `isActive`,
+and timestamps. The status endpoint rejects self-targeting, rejects Admin targets, revokes
+the suspended User's refresh session, and writes the User state plus AuditEvent in one
+transaction. No role-promotion or delete endpoint exists.
+
+### Admin Posts
+
+| Method/path | Contract |
+|---|---|
+| `GET /admin/posts` | `page`, `limit`, optional `q`, `lifecycleStatus=active\|deleted`, `moderationStatus=visible\|hidden`, `sort=latest\|oldest` |
+| `GET /admin/posts/:postId` | Safe administrative Post detail |
+| `PATCH /admin/posts/:postId/moderation` | Strict body `{ status: 'visible' \| 'hidden', reason: string }`; reason 5–500 |
+
+Owner lifecycle and Admin moderation remain independent. An owner-deleted Post cannot be
+hidden/restored through the moderation endpoint. Hide/restore does not delete media,
+interactions, comments, saves, or reports and does not change Report statuses.
+
+### Admin Reports
+
+| Method/path | Contract |
+|---|---|
+| `GET /reports` | `page`, `limit`, optional exact `status`, `targetType`, `reason`, and `sort=latest\|oldest` |
+| `GET /reports/:reportId` | Admin Report detail with reporter, target context or `target: null`, and prior decision |
+| `PATCH /reports/:reportId/status` | Strict body `{ status: 'reviewed' \| 'dismissed' \| 'actioned', adminNote?: string }` |
+
+Only a pending Report can transition, and the current contract does not allow a second
+decision. `adminNote` is optional and limited to 1000 characters. Marking a Report
+`actioned` records the workflow decision only; it does not automatically hide content or
+suspend a User.
+
 ## Health Endpoints
 
 | Method/path | Use |

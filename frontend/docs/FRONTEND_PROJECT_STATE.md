@@ -6,14 +6,46 @@
 - Primary audience: residents of Gaza
 - Frontend: Next.js App Router, React, TypeScript strict, Tailwind CSS, Arabic/RTL-first
 - Backend: SND Community Core API on Render
-- Current milestone: Sprint F6 interaction-layer engineering candidate
-- Snapshot date: 2026-07-26
-- Exact next action: apply Sprint 6 Batch 3, run lint/type/test/build, then execute the
-  interaction browser/network matrix before deployment closure
+- Current milestone: Sprint F9 Admin and moderation frontend
+- Snapshot date: 2026-07-27
+- Exact next action: apply the unified Admin Dashboard patch, then run lint/type/test/build
+  and the documented Admin browser/security smoke matrix
 
 This file records verified current behavior. Older F1/F2 implementation detail remains in
 Git history and the durable architecture/decision documents rather than being repeated as
 the current snapshot.
+
+## Sprint F9 Admin Dashboard — Implemented, Pending Local Verification
+
+- Added a protected Arabic/RTL `/admin` route group with a dedicated responsive shell,
+  desktop Sidebar, mobile navigation Dialog, active-route state, current Admin identity,
+  theme control, return-to-app action, and local-first Logout.
+- Added an Admin route gate that distinguishes session checking, anonymous redirect,
+  authenticated non-Admin Forbidden, and authenticated Admin states. Frontend gating is
+  UX only; every operation remains protected by backend authentication, role gating, and
+  current-Admin database revalidation.
+- Added a real Dashboard Overview backed only by `GET /admin/dashboard/summary`, including
+  refresh, Skeleton, error/retry, generated-at context, and direct links to operational
+  sections.
+- Added paginated Users management with URL-owned search/status/role/sort filters, safe
+  details, avatar display, self/Admin-account safeguards, reason-required suspend/reactivate
+  confirmation, Toast feedback, and precise Admin cache invalidation.
+- Added paginated Posts moderation with URL-owned search/lifecycle/moderation/sort filters,
+  administrative detail context, owner-deleted safeguards, reason-required hide/restore,
+  and invalidation of affected Admin/public/interaction/saved caches.
+- Added paginated Reports management with exact backend statuses, target types, and reasons;
+  missing targets remain reviewable as `null`; pending Reports support reviewed/dismissed/
+  actioned decisions with optional Admin note and explicit separation from Post moderation.
+- Added strict Zod runtime validation for every Admin response and centralized Admin Query
+  keys with private-cache metadata, AbortSignal propagation, bounded staleness, and previous
+  page preservation.
+- Extended safe Auth return destinations to the `/admin` namespace and exposed the Admin
+  entry only to authenticated Admin users in the existing account menu.
+- No role-promotion, account deletion, Admin suspension, comment moderation, or automatic
+  Report-to-Post action was invented.
+
+This section records implementation only. No lint, TypeScript, test, build, deployment, or
+browser result is claimed for the Admin patch until the owner runs the required gates.
 
 ## Completed Foundation and Public Discovery
 

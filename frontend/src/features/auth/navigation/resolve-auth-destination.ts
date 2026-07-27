@@ -7,11 +7,12 @@ const allowedExactPaths = new Set([
     "/profile",
     "/my-posts",
     "/saved",
+    "/admin",
     "/privacy",
     "/community-guidelines",
 ]);
 
-const allowedPathPrefixes = ["/posts/"] as const;
+const allowedPathPrefixes = ["/posts/", "/admin/"] as const;
 
 function isAllowedPathname(pathname: string): boolean {
     return allowedExactPaths.has(pathname) || allowedPathPrefixes.some((prefix) => pathname.startsWith(prefix));

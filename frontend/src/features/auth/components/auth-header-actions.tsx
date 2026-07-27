@@ -1,6 +1,6 @@
 "use client";
 
-import {Bookmark, ChevronDown, FileText, LoaderCircle, LogIn, LogOut, Newspaper, RotateCcw, Settings2, SquarePen, UserRoundPlus} from "lucide-react";
+import {Bookmark, ChevronDown, FileText, LoaderCircle, LogIn, LogOut, Newspaper, RotateCcw, Settings2, ShieldCheck, SquarePen, UserRoundPlus} from "lucide-react";
 import Link from "next/link";
 import {useEffect, useId, useRef, useState} from "react";
 
@@ -263,6 +263,25 @@ function AccountMenu({user, logout}: AccountMenuProps) {
                                     </span>
                                 </span>
                             </Link>
+
+                            {user.role === "admin" ? (
+                                <Link
+                                    href="/admin"
+                                    onClick={closeMenu}
+                                    className="flex min-h-14 items-center gap-3 rounded-2xl px-3 py-2.5 transition-colors hover:bg-surface-muted"
+                                >
+                                    <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-brand/10 text-brand">
+                                        <ShieldCheck aria-hidden="true" className="size-5" />
+                                    </span>
+
+                                    <span className="grid min-w-0">
+                                        <span className="font-semibold text-foreground">لوحة الإدارة</span>
+                                        <span className="text-xs leading-5 text-muted-foreground">
+                                            المستخدمون والبلاغات والإشراف
+                                        </span>
+                                    </span>
+                                </Link>
+                            ) : null}
 
                             <Link
                                 href="/posts"

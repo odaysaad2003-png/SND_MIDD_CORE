@@ -16,7 +16,7 @@
 | F6 | Comments, likes, saves, and reporting | Implementation candidate — verification pending |
 | F7 | SEO, accessibility, performance, and policy quality | Proposed |
 | F8 | Production deployment and verification | Proposed |
-| F9 | Admin and moderation frontend | Deferred |
+| F9 | Admin and moderation frontend | Implemented — pending local verification |
 
 ## Sprint F0 — Documentation and Verified Contracts
 
@@ -478,15 +478,24 @@ F7 release candidate, final Vercel origin, Render availability, and approved pro
 
 ### Goal
 
-Build a separately scoped operator product after V1 succeeds.
+Build a separately scoped operator product on the verified backend Admin and Reports contracts.
 
-### Possible Scope
+### Implemented Scope
 
-Admin dashboard, users, suspend/reactivate, post hide/restore, reports, audit-aware actions, and eventual admin promotion/account-deletion operations after backend contracts exist.
+- protected `/admin` shell and Admin-role UX gate;
+- operational Dashboard summary;
+- paginated/searchable/filterable Users management and safe suspend/reactivate;
+- paginated/filterable Reports review with exact status transitions;
+- paginated/searchable/filterable Post moderation with hide/restore;
+- strict response schemas, private Query keys, confirmation, Toast, retry, empty, offline,
+  mobile, keyboard, and reduced-motion-aware behavior.
 
 ### Boundary
 
-This sprint is intentionally not detailed or approved. Its roadmap must be created from the then-current backend and operational needs, not from V1 assumptions.
+The implementation does not add role promotion, account deletion, Admin suspension,
+automatic Report-to-content actions, or any unsupported backend field. Status remains
+`Implemented — pending local verification` until lint, TypeScript, tests, build, and the
+Admin security/browser smoke matrix pass.
 
 ## Approval and Dependency Gates
 

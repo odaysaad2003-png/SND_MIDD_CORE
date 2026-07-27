@@ -25,12 +25,17 @@ describe("resolveAuthDestination", () => {
         );
     });
 
+    it("keeps the approved admin namespace with URL filters", () => {
+        expect(resolveAuthDestination("/admin/reports?status=pending")).toBe(
+            "/admin/reports?status=pending"
+        );
+    });
+
     it.each([
         "https://evil.example/path",
         "//evil.example/path",
         "/\\evil.example/path",
         "/posts//evil",
-        "/admin",
         "/profile/settings",
         "\u0000/posts",
     ])("falls back for an unsafe or unsupported return target: %s", (returnTo) => {

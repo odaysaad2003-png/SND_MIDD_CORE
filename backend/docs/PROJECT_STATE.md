@@ -152,6 +152,10 @@ Comments, Likes, Saves, and new Report creation.
 - Aggregation-backed Report read models and validated pagination/filter/sort inputs.
 - Existing Reports remain Admin-reviewable when their target is later hidden or owner-deleted.
 - Report status transitions and Post moderation remain separate workflows.
+- Admin Report listing accepts an optional exact `reason` filter in addition to status,
+  target type, pagination, and sort.
+- Missing/deleted Report targets are normalized to `null` in the Admin read model so the
+  historical Report remains safely reviewable without an invalid partial target object.
 
 ---
 
@@ -173,12 +177,16 @@ PATCH /api/v1/admin/users/:userId/status
 ```
 
 - Validated pagination, search, filtering, and deterministic sorting.
-- Dedicated sanitized Admin User presenters.
+- Dedicated sanitized Admin User presenters, including the safe display avatar URL and no
+  storage public ID.
 - Admin cannot suspend/reactivate self.
 - Admin accounts cannot be changed through the normal-user status endpoint.
 - Suspend/reactivate uses one MongoDB transaction for current-Admin revalidation, target
   load, transition validation, User write, and AuditEvent write.
 - Suspension revokes the stored refresh session.
+
+The avatar/reason-filter/missing-target contract refinements above are implemented for the
+Admin frontend integration patch and remain pending local typecheck/build/manual verification.
 
 ## Sprint 7C — Post Moderation
 
@@ -231,6 +239,9 @@ USER_SUSPENDED
 USER_REACTIVATED
 POST_HIDDEN
 POST_RESTORED
+REPORT_REVIEWED
+REPORT_DISMISSED
+REPORT_ACTIONED
 ```
 
 Current target types:
@@ -238,6 +249,7 @@ Current target types:
 ```text
 user
 post
+report
 ```
 
 High-impact typed writers accept only allowlisted state snapshots and require the same

@@ -130,7 +130,11 @@ async function assertTargetIsReportable(
     throw AppError.internal("Unsupported report target type");
 }
 
-function buildReportListFilter(options: {status?: ReportStatus; targetType?: ReportTargetType}): FilterQuery<IReport> {
+function buildReportListFilter(options: {
+    status?: ReportStatus;
+    targetType?: ReportTargetType;
+    reason?: ReportReason;
+}): FilterQuery<IReport> {
     const filter: FilterQuery<IReport> = {};
 
     if (options.status) {
@@ -139,6 +143,10 @@ function buildReportListFilter(options: {status?: ReportStatus; targetType?: Rep
 
     if (options.targetType) {
         filter.targetType = options.targetType;
+    }
+
+    if (options.reason) {
+        filter.reason = options.reason;
     }
 
     return filter;
@@ -272,7 +280,12 @@ function buildReportAggregationPipeline(options: {
                                 $switch: {
                                     branches: [
                                         {
-                                            case: {$eq: ["$targetType", "post"]},
+                                            case: {
+                                                $and: [
+                                                    {$eq: ["$targetType", "post"]},
+                                                    {$ne: [{$ifNull: ["$targetPost._id", null]}, null]},
+                                                ],
+                                            },
                                             then: {
                                                 id: {
                                                     $cond: [
@@ -303,7 +316,12 @@ function buildReportAggregationPipeline(options: {
                                             },
                                         },
                                         {
-                                            case: {$eq: ["$targetType", "comment"]},
+                                            case: {
+                                                $and: [
+                                                    {$eq: ["$targetType", "comment"]},
+                                                    {$ne: [{$ifNull: ["$targetComment._id", null]}, null]},
+                                                ],
+                                            },
                                             then: {
                                                 id: {
                                                     $cond: [
@@ -417,16 +435,18 @@ export async function listReports(
         sort: "latest" | "oldest";
         status?: ReportStatus;
         targetType?: ReportTargetType;
+        reason?: ReportReason;
     }
 ): Promise<{data: SanitizedReport[]; meta: PaginationMeta}> {
     await assertCurrentAdmin(adminUserId);
 
-    const {page, limit, sort, status, targetType} = options;
+    const {page, limit, sort, status, targetType, reason} = options;
     const skip = (page - 1) * limit;
 
     const match = buildReportListFilter({
         status,
         targetType,
+        reason,
     });
 
     const [result] = await ReportModel.aggregate<ReportAggregationResult>(
