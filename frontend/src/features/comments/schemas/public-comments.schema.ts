@@ -33,7 +33,27 @@ export const publicCommentsResultSchema = z
     })
     .strict();
 
+export const commentContentSchema = z
+    .string()
+    .trim()
+    .min(1, "اكتب تعليقًا قبل الإرسال")
+    .max(1000, "التعليق يجب ألا يتجاوز 1000 حرف");
+
+export const commentMutationInputSchema = z
+    .object({
+        content: commentContentSchema,
+    })
+    .strict();
+
+export const commentMutationResultSchema = z
+    .object({
+        data: publicCommentSchema,
+    })
+    .strict();
+
 export type PublicComment = z.infer<typeof publicCommentSchema>;
 export type PublicCommentsQueryInput = z.input<typeof publicCommentsQuerySchema>;
 export type PublicCommentsQuery = z.output<typeof publicCommentsQuerySchema>;
 export type PublicCommentsResult = z.infer<typeof publicCommentsResultSchema>;
+export type CommentMutationInput = z.input<typeof commentMutationInputSchema>;
+export type CommentMutationPayload = z.output<typeof commentMutationInputSchema>;

@@ -1,6 +1,15 @@
+"use client";
+
+import {Flag} from "lucide-react";
+import {useState} from "react";
+
 import {Avatar} from "@/components/ui/avatar";
+import {Button} from "@/components/ui/button";
+import {useAuth} from "@/features/auth/providers/auth-provider";
+import {ReportDialog} from "@/features/reports/components/report-dialog";
 
 import type {PublicComment} from "../schemas/public-comments.schema";
+import {CommentOwnerActions} from "./comment-owner-actions";
 
 const commentDateTimeFormatter = new Intl.DateTimeFormat("ar-PS", {
     dateStyle: "medium",
@@ -13,8 +22,11 @@ type PublicCommentCardProps = Readonly<{
 }>;
 
 export function PublicCommentCard({comment}: PublicCommentCardProps) {
+    const {status, user} = useAuth();
+    const [reportOpen, setReportOpen] = useState(false);
     const authorId = `public-comment-author-${comment.id}`;
     const wasEdited = comment.updatedAt !== comment.createdAt;
+    const isOwner = status === "authenticated" && user?.id === comment.author.id;
 
     return (
         <article
@@ -41,6 +53,18 @@ export function PublicCommentCard({comment}: PublicCommentCardProps) {
             <p className="whitespace-pre-wrap break-words text-sm leading-7 text-foreground">
                 {comment.content}
             </p>
+
+            {isOwner ? (
+                <CommentOwnerActions comment={comment} />
+            ) : status !== "checking" ? (
+                <div className="flex justify-end">
+                    <Button type="button" size="sm" variant="ghost" onClick={() => setReportOpen(true)}>
+                        <Flag aria-hidden="true" /> إبلاغ
+                    </Button>
+                </div>
+            ) : null}
+
+            <ReportDialog open={reportOpen} target={{type: "comment", id: comment.id}} onOpenChange={setReportOpen} />
         </article>
     );
 }

@@ -15,6 +15,7 @@ import {
 } from "../lib/public-comments-url-state";
 import {publicCommentsQueryOptions} from "../queries/public-comments.query";
 import type {PublicCommentsQueryInput} from "../schemas/public-comments.schema";
+import {CommentComposer} from "./comment-composer";
 import {PublicCommentCard} from "./public-comment-card";
 import {PublicCommentsPagination} from "./public-comments-pagination";
 import {PublicCommentsSkeleton} from "./public-comments-skeleton";
@@ -31,7 +32,7 @@ export function PublicCommentsListClient({postId, query, state}: PublicCommentsL
     const result = useQuery(publicCommentsQueryOptions(postId, query));
 
     if (result.isPending) {
-        return <PublicCommentsSkeleton />;
+        return <div className="grid gap-5"><CommentComposer postId={postId} /><PublicCommentsSkeleton /></div>;
     }
 
     if (result.isError) {
@@ -69,7 +70,7 @@ export function PublicCommentsListClient({postId, query, state}: PublicCommentsL
     }
 
     if (result.data.meta.total === 0) {
-        return <Feedback title="لا توجد تعليقات بعد" description="لم تبدأ المحادثة حول هذا المنشور حتى الآن." />;
+        return <div className="grid gap-5"><CommentComposer postId={postId} /><Feedback title="لا توجد تعليقات بعد" description="ابدأ المحادثة بأول تعليق." /></div>;
     }
 
     if (result.data.data.length === 0) {
@@ -95,6 +96,7 @@ export function PublicCommentsListClient({postId, query, state}: PublicCommentsL
 
     return (
         <div className="grid gap-5">
+            <CommentComposer postId={postId} />
             <div className="flex min-h-7 flex-wrap items-center justify-between gap-3 text-sm text-muted-foreground">
                 <p>
                     عدد التعليقات: <span className="font-semibold text-foreground">{commentCountFormatter.format(result.data.meta.total)}</span>
