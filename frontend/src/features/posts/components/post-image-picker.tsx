@@ -23,14 +23,23 @@ import {
 type PostImagePickerProps = Readonly<{
     images: readonly PostImageSelection[];
     disabled?: boolean;
+    existingImageCount?: number;
     onChange: (images: readonly PostImageSelection[]) => void;
 }>;
 
-export function PostImagePicker({images, disabled = false, onChange}: PostImagePickerProps) {
+export function PostImagePicker({
+    images,
+    disabled = false,
+    existingImageCount = 0,
+    onChange,
+}: PostImagePickerProps) {
     const inputId = useId();
     const inputRef = useRef<HTMLInputElement | null>(null);
     const [selectionError, setSelectionError] = useState<string | null>(null);
     const [isInspecting, setIsInspecting] = useState(false);
+
+    const occupiedCount = existingImageCount + images.length;
+    const remainingSlots = MAX_POST_IMAGES - occupiedCount;
 
     async function handleFileChange(event: ChangeEvent<HTMLInputElement>): Promise<void> {
         const files = Array.from(event.currentTarget.files ?? []);
@@ -45,7 +54,7 @@ export function PostImagePicker({images, disabled = false, onChange}: PostImageP
         setIsInspecting(true);
 
         try {
-            const nextSelections = await createPostImageSelections(files, images.length);
+            const nextSelections = await createPostImageSelections(files, occupiedCount);
             onChange([...images, ...nextSelections]);
         } catch (error) {
             if (error instanceof PostImageSelectionError) {
@@ -71,8 +80,6 @@ export function PostImagePicker({images, disabled = false, onChange}: PostImageP
         setSelectionError(null);
     }
 
-    const remainingSlots = MAX_POST_IMAGES - images.length;
-
     return (
         <section aria-labelledby={`${inputId}-heading`} className="grid gap-4">
             <div className="flex flex-wrap items-start justify-between gap-3">
@@ -86,7 +93,7 @@ export function PostImagePicker({images, disabled = false, onChange}: PostImageP
                 </div>
 
                 <span className="rounded-full border border-border bg-surface-muted px-3 py-1 text-xs font-bold text-muted-foreground">
-                    {images.length}/{MAX_POST_IMAGES}
+                    {occupiedCount}/{MAX_POST_IMAGES}
                 </span>
             </div>
 
@@ -137,7 +144,7 @@ export function PostImagePicker({images, disabled = false, onChange}: PostImageP
                         </li>
                     ))}
                 </ul>
-            ) : (
+            ) : remainingSlots > 0 ? (
                 <button
                     type="button"
                     disabled={disabled || isInspecting}
@@ -157,11 +164,17 @@ export function PostImagePicker({images, disabled = false, onChange}: PostImageP
                                 {isInspecting ? "نفحص الصور…" : "أضف صورًا للمنشور"}
                             </span>
                             <span className="mt-1 block text-sm text-muted-foreground">
-                                الصور اختيارية ويمكن نشر النص بدونها
+                                الصور اختيارية ويمكن حفظ المنشور بدونها
                             </span>
                         </span>
                     </span>
                 </button>
+            ) : (
+                <Feedback
+                    variant="info"
+                    title="اكتمل الحد الأقصى للصور"
+                    description="احذف صورة حالية قبل إضافة صورة أخرى إلى هذا المنشور."
+                />
             )}
 
             {images.length > 0 && remainingSlots > 0 ? (

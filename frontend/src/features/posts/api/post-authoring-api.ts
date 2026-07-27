@@ -4,7 +4,9 @@ import {ApiError} from "@/lib/api/api-error";
 import {
     postAuthoringFormSchema,
     postMutationResultSchema,
+    postUpdatePayloadSchema,
     type PostAuthoringFormValues,
+    type PostUpdatePayload,
 } from "../schemas/post-authoring.schema";
 import type {PublicPost} from "../schemas/public-posts.schema";
 
@@ -47,6 +49,32 @@ export async function createPost(
     return parsePostMutationResult(result, "The created post response does not match the verified API contract");
 }
 
+export async function updatePost(
+    postId: string,
+    values: PostUpdatePayload,
+    options: MutationOptions = {}
+): Promise<PublicPost> {
+    const payload = postUpdatePayloadSchema.parse(values);
+
+    const result = await authorizedApiRequest<unknown>(`posts/${encodeURIComponent(postId)}`, {
+        method: "PATCH",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+        signal: options.signal,
+    });
+
+    return parsePostMutationResult(result, "The updated post response does not match the verified API contract");
+}
+
+export async function deletePost(postId: string, options: MutationOptions = {}): Promise<void> {
+    await authorizedApiRequest<undefined>(`posts/${encodeURIComponent(postId)}`, {
+        method: "DELETE",
+        signal: options.signal,
+    });
+}
+
 export async function uploadPostImages(
     postId: string,
     files: readonly File[],
@@ -69,4 +97,21 @@ export async function uploadPostImages(
     });
 
     return parsePostMutationResult(result, "The post image response does not match the verified API contract");
+}
+
+export async function removePostImage(
+    postId: string,
+    imageUrl: string,
+    options: MutationOptions = {}
+): Promise<PublicPost> {
+    const result = await authorizedApiRequest<unknown>(`posts/${encodeURIComponent(postId)}/images`, {
+        method: "DELETE",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({imageUrl}),
+        signal: options.signal,
+    });
+
+    return parsePostMutationResult(result, "The post image removal response does not match the verified API contract");
 }

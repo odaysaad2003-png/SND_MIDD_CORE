@@ -13,6 +13,12 @@ describe("resolveAuthDestination", () => {
         expect(resolveAuthDestination("/profile")).toBe("/profile");
     });
 
+    it("keeps the approved current-user posts route with filters", () => {
+        expect(resolveAuthDestination("/my-posts?q=مساعدة&sort=-updatedAt")).toBe(
+            "/my-posts?q=%D9%85%D8%B3%D8%A7%D8%B9%D8%AF%D8%A9&sort=-updatedAt"
+        );
+    });
+
     it.each([
         "https://evil.example/path",
         "//evil.example/path",

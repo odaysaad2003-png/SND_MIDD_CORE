@@ -1,4 +1,8 @@
-import {LockKeyhole, ShieldCheck, UserRound} from "lucide-react";
+import {FileText, LockKeyhole, ShieldCheck, UserRound} from "lucide-react";
+import Link from "next/link";
+
+import {buttonVariants} from "@/components/ui/button";
+import {cn} from "@/lib/utils/cn";
 
 import {MyProfileClient} from "../components/my-profile-client";
 
@@ -24,15 +28,27 @@ export function MyProfilePage() {
                                 حسابك في سند
                             </p>
 
-                            <div className="grid gap-3">
-                                <h1 className="text-balance text-3xl font-bold leading-tight tracking-tight text-foreground sm:text-4xl lg:text-5xl">
-                                    ملفك الشخصي الخاص
-                                </h1>
+                            <div className="grid gap-4">
+                                <div className="grid gap-3">
+                                    <h1 className="text-balance text-3xl font-bold leading-tight tracking-tight text-foreground sm:text-4xl lg:text-5xl">
+                                        ملفك الشخصي الخاص
+                                    </h1>
 
-                                <p className="max-w-2xl leading-8 text-muted-foreground">
-                                    راجع بيانات حسابك وهويتك المستخدمة داخل سند. البريد الإلكتروني وحالة الحساب لا
-                                    يظهران في صفحات المجتمع العامة.
-                                </p>
+                                    <p className="max-w-2xl leading-8 text-muted-foreground">
+                                        راجع بيانات حسابك وهويتك المستخدمة داخل سند. البريد الإلكتروني وحالة الحساب لا
+                                        يظهران في صفحات المجتمع العامة.
+                                    </p>
+                                </div>
+
+                                <div>
+                                    <Link
+                                        href="/my-posts"
+                                        className={cn(buttonVariants({variant: "secondary"}), "w-full sm:w-auto")}
+                                    >
+                                        <FileText aria-hidden="true" />
+                                        إدارة منشوراتي
+                                    </Link>
+                                </div>
                             </div>
                         </div>
 

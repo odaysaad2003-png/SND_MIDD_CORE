@@ -27,6 +27,12 @@ export const postAuthoringFormSchema = z
     })
     .strict();
 
+export const postUpdatePayloadSchema = postAuthoringFormSchema
+    .partial()
+    .refine((payload) => Object.keys(payload).length > 0, {
+        message: "يجب تغيير العنوان أو المحتوى قبل الحفظ",
+    });
+
 export const postMutationResultSchema = z
     .object({
         data: publicPostSchema,
@@ -34,4 +40,5 @@ export const postMutationResultSchema = z
     .strict();
 
 export type PostAuthoringFormValues = z.infer<typeof postAuthoringFormSchema>;
+export type PostUpdatePayload = z.infer<typeof postUpdatePayloadSchema>;
 export type PostMutationResult = z.infer<typeof postMutationResultSchema>;

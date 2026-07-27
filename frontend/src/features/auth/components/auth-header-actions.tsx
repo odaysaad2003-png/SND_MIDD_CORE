@@ -1,6 +1,6 @@
 "use client";
 
-import {ChevronDown, LoaderCircle, LogIn, LogOut, Newspaper, RotateCcw, Settings2, SquarePen, UserRoundPlus} from "lucide-react";
+import {ChevronDown, FileText, LoaderCircle, LogIn, LogOut, Newspaper, RotateCcw, Settings2, SquarePen, UserRoundPlus} from "lucide-react";
 import Link from "next/link";
 import {useEffect, useId, useRef, useState} from "react";
 
@@ -213,6 +213,23 @@ function AccountMenu({user, logout}: AccountMenuProps) {
 
                             <Link
                                 ref={firstActionRef}
+                                href="/my-posts"
+                                onClick={closeMenu}
+                                className="flex min-h-14 items-center gap-3 rounded-2xl px-3 py-2.5 transition-colors hover:bg-surface-muted"
+                            >
+                                <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-brand/10 text-brand">
+                                    <FileText aria-hidden="true" className="size-5" />
+                                </span>
+
+                                <span className="grid min-w-0">
+                                    <span className="font-semibold text-foreground">منشوراتي</span>
+                                    <span className="text-xs leading-5 text-muted-foreground">
+                                        تعديل منشوراتك وصورها أو حذفها
+                                    </span>
+                                </span>
+                            </Link>
+
+                            <Link
                                 href="/profile"
                                 onClick={closeMenu}
                                 className="flex min-h-14 items-center gap-3 rounded-2xl px-3 py-2.5 transition-colors hover:bg-surface-muted"

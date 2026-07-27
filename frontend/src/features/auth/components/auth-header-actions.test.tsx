@@ -23,7 +23,18 @@ vi.mock("@/components/feedback/toast/snd-toast-store", () => ({
     sndToast: toastMocks,
 }));
 
+import {PostComposerProvider} from "@/features/posts/providers/post-composer-provider";
+
 import {AuthHeaderActions} from "./auth-header-actions";
+
+
+function renderHeaderActions() {
+    return render(
+        <PostComposerProvider>
+            <AuthHeaderActions />
+        </PostComposerProvider>
+    );
+}
 
 const user = {
     id: "user-1",
@@ -55,7 +66,7 @@ describe("AuthHeaderActions", () => {
             retrySession: authMocks.retrySession,
         });
 
-        render(<AuthHeaderActions />);
+        renderHeaderActions();
 
         expect(
             screen.getByRole("link", {
@@ -79,7 +90,7 @@ describe("AuthHeaderActions", () => {
             retrySession: authMocks.retrySession,
         });
 
-        render(<AuthHeaderActions />);
+        renderHeaderActions();
 
         expect(
             screen.getByRole("status", {
@@ -105,7 +116,7 @@ describe("AuthHeaderActions", () => {
             retrySession: authMocks.retrySession,
         });
 
-        render(<AuthHeaderActions />);
+        renderHeaderActions();
 
         expect(
             screen.queryByRole("link", {
@@ -131,7 +142,7 @@ describe("AuthHeaderActions", () => {
             retrySession: authMocks.retrySession,
         });
 
-        render(<AuthHeaderActions />);
+        renderHeaderActions();
 
         const accountButton = screen.getByRole("button", {
             name: "فتح قائمة حساب مستخدم سند",
@@ -141,15 +152,15 @@ describe("AuthHeaderActions", () => {
 
         expect(
             screen.getByRole("link", {
-                name: /إدارة الملف الشخصي/,
+                name: /منشوراتي/,
             })
-        ).toHaveAttribute("href", "/profile");
+        ).toHaveAttribute("href", "/my-posts");
 
         expect(
             screen.getByRole("link", {
-                name: /تغيير صورة الحساب/,
+                name: /الملف الشخصي والإعدادات/,
             })
-        ).toHaveAttribute("href", "/profile#profile-avatar");
+        ).toHaveAttribute("href", "/profile");
     });
 
     it("closes the account panel with Escape and returns focus to its trigger", async () => {
@@ -161,7 +172,7 @@ describe("AuthHeaderActions", () => {
             retrySession: authMocks.retrySession,
         });
 
-        render(<AuthHeaderActions />);
+        renderHeaderActions();
 
         const accountButton = screen.getByRole("button", {
             name: "فتح قائمة حساب مستخدم سند",
@@ -171,7 +182,7 @@ describe("AuthHeaderActions", () => {
 
         expect(
             screen.getByRole("link", {
-                name: /إدارة الملف الشخصي/,
+                name: /الملف الشخصي والإعدادات/,
             })
         ).toBeInTheDocument();
 
@@ -179,7 +190,7 @@ describe("AuthHeaderActions", () => {
 
         expect(
             screen.queryByRole("link", {
-                name: /إدارة الملف الشخصي/,
+                name: /الملف الشخصي والإعدادات/,
             })
         ).not.toBeInTheDocument();
 
@@ -197,7 +208,7 @@ describe("AuthHeaderActions", () => {
 
         authMocks.logout.mockResolvedValue(undefined);
 
-        render(<AuthHeaderActions />);
+        renderHeaderActions();
 
         await userEvent.click(
             screen.getByRole("button", {
@@ -231,7 +242,7 @@ describe("AuthHeaderActions", () => {
 
         authMocks.logout.mockRejectedValue(new TypeError("Network unavailable"));
 
-        render(<AuthHeaderActions />);
+        renderHeaderActions();
 
         await userEvent.click(
             screen.getByRole("button", {
